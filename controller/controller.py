@@ -1,6 +1,6 @@
-from scr.StartView import StartView
-from scr.InfoView import InfoView
-from scr.MainView import MainView
+from view.StartView import StartView
+from view.InfoView import InfoView
+from view.MainView import MainView
 
 # пока главный контроллер отвечает за все, предлагаю потом разбить
 # на более мелкие
@@ -31,8 +31,3 @@ class UltimateController:
         # вызов обработчика файлов из model
         # открытие окна текста (я его еще не создала хехе)
         pass
-
-
-if __name__ == "__main__":
-    app = UltimateController()
-    app.open_start_view()

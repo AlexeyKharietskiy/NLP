@@ -1,2 +1,5 @@
-class Hello:
-    pass
+from controller.controller import UltimateController
+
+if __name__ == "__main__":
+    app = UltimateController()
+    app.open_start_view()

@@ -10,12 +10,12 @@ class TextConverter:
         full_text = []
         for paragraph in doc.paragraphs:
             full_text.append(paragraph.text)
-        return '/n'.join(full_text)
+        return '\n'.join(full_text)
 
 
 
 # код для проверки
 if __name__ == "__main__":
-    file = 'files/text2.docx'
+    file = r'D:\Project\sem6\ЕЯзИИС\lab1\data\test_data.docx'
     text_conv = TextConverter(file)
-    print(text_conv.convert_doc_to_text())
+    print(text_conv.convert_doc_docx_to_text())
