@@ -5,7 +5,7 @@ from natasha import (
     MorphVocab,
     Doc
 )
-from WordForm import WordForm
+from model.WordForm import WordForm
 
 class TextProcessor:
     def __init__(self, text):

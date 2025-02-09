@@ -1,4 +1,5 @@
-from controller.controller import UltimateController
+from controller.UltimateController import UltimateController
+
 
 if __name__ == "__main__":
     app = UltimateController()
