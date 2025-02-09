@@ -6,7 +6,7 @@ from model.TextProcessor import TextProcessor
 class MainWindowController:
     def __init__(self):
         self.window = None
-        self.text_processor = None
+        self.word_form_list = []
 
     def open_window(self):
         if self.window is not None and self.window.winfo_exists():
@@ -17,11 +17,15 @@ class MainWindowController:
 
     def open_file(self, file):
         try:
+            #открываем файлик
             text_converter = TextConverter(file)
             text = text_converter.convert_doc_docx_to_text()
             logger.info("File was opened")
-            self.text_processor = TextProcessor(text)
+            # натаха хуярит как не в себя
+            text_processor = TextProcessor(text)
+            self.word_form_list = text_processor.process_text()
             logger.info("Text has been processed")
         except Exception as e:
+            #файлик оказался хуйней :(
             logger.error(f"File opening error: {e}")
 
