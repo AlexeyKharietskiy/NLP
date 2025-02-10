@@ -1,7 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
-from tkinter import ttk, messagebox, filedialog
-
+from tkinter import ttk, filedialog
 
 # следующий класс просто вставочка с прошлой лабы для раскрутки
 # пока просто не обращай внимания
@@ -9,6 +7,7 @@ from tkinter import ttk, messagebox, filedialog
 class MainView(tk.Tk):
     def __init__(self, controller):
         super().__init__()
+        self.resizable(False, False)
         self.controller = controller
         self.title('Лексический словарь')
         self.vocab_table = None
@@ -27,6 +26,8 @@ class MainView(tk.Tk):
         scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.vocab_table.yview)
         scrollbar.grid(row=0, column=2, sticky='nse')
 
+        self.vocab_table.configure(yscrollcommand=scrollbar.set)
+
         self.menu = tk.Menu(self, bg='lavender blush', fg='black', activebackground='lavender', activeforeground='black')
         self.menu.add_command(label="Открыть файл", command=self.open_file)
         self.config(menu=self.menu)
@@ -35,8 +36,17 @@ class MainView(tk.Tk):
         self.create_view()
         self.mainloop()
 
+    def clear_table(self):
+        for item in self.vocab_table.get_children():
+            self.vocab_table.delete(item)
+
+    def populate_table(self, data):
+        self.clear_table()
+        for row in data:
+            self.vocab_table.insert("", tk.END, values=row)
+
     def open_file(self):
         filename = filedialog.askopenfilename(title='Открыть файл', filetypes=(("DOCX", "*.docx"), ("DOC", "*.doc")))
-        self.controller.open_file(filename)
-        # здесь вызыв контроллера чтобы он открыл окно и туда записал текст с файла
-        pass
+        data = self.controller.open_file(filename)
+        self.populate_table(data)
+

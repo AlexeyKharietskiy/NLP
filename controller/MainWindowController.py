@@ -1,7 +1,9 @@
+import tkinter
 from view.MainView import MainView
 from model.TextConverter import TextConverter
 from logger import logger
 from model.TextProcessor import TextProcessor
+
 
 class MainWindowController:
     def __init__(self):
@@ -9,8 +11,12 @@ class MainWindowController:
         self.word_form_list = []
 
     def open_window(self):
-        if self.window is not None and self.window.winfo_exists():
-            self.window.destroy()
+        if self.window is not None:
+            try:
+                if self.window.winfo_exists():
+                    self.window.destroy()
+            except tkinter.TclError:
+                pass
         self.window = MainView(self)
         self.window.main()
 
@@ -25,7 +31,14 @@ class MainWindowController:
             text_processor = TextProcessor(text)
             self.word_form_list = text_processor.process_text()
             logger.info("Text has been processed")
+            return self.fill_in_table()
         except Exception as e:
             #файлик оказался хуйней :(
             logger.error(f"File opening error: {e}")
 
+    def fill_in_table(self):
+        table_data = [
+            (wf.word_form, wf.lemma, wf.count, "")  # Пустая строка для морфологической информации
+            for wf in self.word_form_list
+        ]
+        return table_data

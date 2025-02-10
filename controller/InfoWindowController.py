@@ -1,13 +1,18 @@
+import tkinter
 from view.InfoView import InfoView
-from logger import logger
+
 
 class InfoWindowController:
     def __init__(self):
         self.window = None
 
     def open_window(self):
-        if self.window is not None and self.window.winfo_exists():
-            self.window.destroy()
+        if self.window is not None:
+            try:
+                if self.window.winfo_exists():
+                    self.window.destroy()
+            except tkinter.TclError:
+                pass
         self.window = InfoView(self)
         self.window.main()
 

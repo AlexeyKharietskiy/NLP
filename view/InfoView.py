@@ -5,6 +5,7 @@ from tkinter import ttk
 class InfoView(tk.Tk):
     def __init__(self, controller):
         super().__init__()
+        self.resizable(False, False)
         self.controller = controller
         self.configure(bg='snow1')
         self.title("О программе")

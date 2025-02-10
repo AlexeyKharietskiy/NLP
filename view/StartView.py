@@ -1,11 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
-from tkinter import ttk, messagebox, filedialog
 
 
 class StartView(tk.Tk):
     def __init__(self, controller):
         super().__init__()
+        self.resizable(False, False)
         self.controller = controller
         self.configure(bg='lavender blush')
         self.title("Формирование словаря естественного языка")
