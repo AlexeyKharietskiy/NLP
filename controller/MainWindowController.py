@@ -37,8 +37,9 @@ class MainWindowController:
             logger.error(f"File opening error: {e}")
 
     def fill_in_table(self):
+        sorted_word_forms = sorted(self.word_form_list, key=lambda wf: wf.word_form.lower())
         table_data = [
-            (wf.word_form, wf.lemma, wf.count, "")  # Пустая строка для морфологической информации
-            for wf in self.word_form_list
+            (wf.word_form, wf.lemma, wf.count, wf.morphological_info)  # Пустая строка для морфологической информации
+            for wf in sorted_word_forms
         ]
         return table_data
