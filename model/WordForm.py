@@ -6,9 +6,6 @@ class WordForm:
         self.morphological_info = morphological_info
 
     def to_dict(self):
-        """
-        Преобразует объект WordForm в словарь для записи в JSON.
-        """
         return {
             "word_form": self.word_form,
             "lemma": self.lemma,

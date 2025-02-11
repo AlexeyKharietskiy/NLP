@@ -3,43 +3,39 @@ import os
 from model.WordForm import WordForm
 from logger import logger
 
-#TODO как-то красиво все сделать
 class JSONConverter:
-
-    def __init__(self,file_path):
+    def __init__(self, file_path):
         self.file_path = file_path
         self.word_form_list = []
 
-    def load_data_from_json(self, word_form_list=None):
+    def load_data_from_json(self, default_word_form_list=None):
+
         if not os.path.exists(self.file_path):
-            self.word_form_list = word_form_list
+            logger.info(f"Didn't find file {self.file_path}. Use empty list.")
+            self.word_form_list = default_word_form_list or []
             return self.word_form_list
-        else:
-            try:
-                with open(self.file_path, 'r', encoding='utf-8') as file:
-                    data = json.load(file)
-                    self.create_word_form_list(data)
-                    return self.word_form_list
-            except json.JSONDecodeError:
-                logger.error("Ошибка чтения JSON-файла.")
 
-    def save_data_to_json(self, file_path):
-        data = [word_form.to_dict() for word_form in self.word_form_list]
         try:
-            with open(file_path, 'w', encoding='utf-8') as file:
-                json.dump(data, file, ensure_ascii=False, indent=4)
-            logger.info(f"Данные успешно сохранены в {file_path}")
-        except Exception as e:
-            logger.error(f"Ошибка записи в JSON-файл: {e}")
+            with open(self.file_path, 'r', encoding='utf-8') as file:
+                data = json.load(file)
+                logger.info(f"Successfully uploaded data from {self.file_path}")
+                self.create_word_form_list(data)
+                return self.word_form_list
+        except json.JSONDecodeError:
+            logger.error("Read JSON-file error")
+            return []
 
-    def update_notes(self, word_form, morphological_info):
-        for entry in self.word_form_list:
-            if entry.word_form == word_form:
-                entry.morphological_info = morphological_info
-                logger.info(f"Заметки для '{word_form}' обновлены: {morphological_info}")
-                return True
-        logger.error(f"Словоформа '{word_form}' не найдена.")
-        return False
+    def save_data_to_json(self):
+        if not self.file_path:
+            return
+
+        try:
+            data = [word_form.to_dict() for word_form in self.word_form_list]
+            with open(self.file_path, 'w', encoding='utf-8') as file:
+                json.dump(data, file, ensure_ascii=False, indent=4)
+            logger.info(f"Successfully loaded data in {self.file_path}")
+        except Exception as e:
+            logger.error(f"Write error JSON-file: {e}")
 
     def create_word_form_list(self, data):
         self.word_form_list = [
@@ -50,3 +46,6 @@ class JSONConverter:
                 item.get("morphological_info", "")
             ) for item in data
         ]
+
+    def set_word_form_list(self, word_form_list):
+        self.word_form_list = word_form_list

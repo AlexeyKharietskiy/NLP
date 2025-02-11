@@ -35,9 +35,3 @@ class StartView(tk.Tk):
     def main(self):
         self.create_widgets()
         self.mainloop()
-
-
-# код для проверки
-if __name__ == "__main__":
-    app = StartView()
-    app.main()
