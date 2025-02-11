@@ -3,7 +3,6 @@ from tkinter import ttk, filedialog
 
 # следующий класс просто вставочка с прошлой лабы для раскрутки
 # пока просто не обращай внимания
-#TODO графа поиска
 class MainView(tk.Tk):
     def __init__(self, controller):
         super().__init__()
