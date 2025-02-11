@@ -13,11 +13,13 @@ class JSONConverter:
     def load_data_from_json(self, word_form_list=None):
         if not os.path.exists(self.file_path):
             self.word_form_list = word_form_list
+            return self.word_form_list
         else:
             try:
                 with open(self.file_path, 'r', encoding='utf-8') as file:
                     data = json.load(file)
                     self.create_word_form_list(data)
+                    return self.word_form_list
             except json.JSONDecodeError:
                 logger.error("Ошибка чтения JSON-файла.")
 
@@ -30,10 +32,7 @@ class JSONConverter:
         except Exception as e:
             logger.error(f"Ошибка записи в JSON-файл: {e}")
 
-    def update_notes(self, data, word_form, morphological_info):
-        """
-        Обновляет заметки для указанной словоформы в данных.
-        """
+    def update_notes(self, word_form, morphological_info):
         for entry in self.word_form_list:
             if entry.word_form == word_form:
                 entry.morphological_info = morphological_info
@@ -51,15 +50,3 @@ class JSONConverter:
                 item.get("morphological_info", "")
             ) for item in data
         ]
-
-
-
-def main():
-    # Путь к JSON-файлу
-    json_file = "test.json"
-    converter = JSONConverter(json_file)
-    data = converter.load_data_from_json()
-    converter.update_notes(data,"и", "хуй")
-    converter.save_data_to_json(json_file)
-if __name__ == "__main__":
-    main()

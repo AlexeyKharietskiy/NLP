@@ -1,8 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
 
-# следующий класс просто вставочка с прошлой лабы для раскрутки
-# пока просто не обращай внимания
+
 class MainView(tk.Tk):
     def __init__(self, controller):
         super().__init__()
@@ -11,15 +10,13 @@ class MainView(tk.Tk):
         self.title('Лексический словарь')
         self.vocab_table = None
         self.menu = None
-        self.search_entry = None  # Поле для ввода поискового запроса
-        self.search_button = None  # Кнопка для запуска поиска
-        self.full_data = []  # Храним все данные для восстановления после поиска
+        self.search_entry = None
+        self.search_button = None
 
     def create_view(self):
-        # table
         columns = ["Wordform", "Lemma", "Occurance Frequency", "Morfological Info"]
         self.vocab_table = ttk.Treeview(self, columns=columns, show="headings")
-        self.vocab_table.grid(row=1, column=0, padx=[10, 10], pady=10, columnspan=3)
+        self.vocab_table.grid(row=1, column=0, padx=10, pady=10, columnspan=3)
         self.vocab_table.configure(height=30)
         self.vocab_table.heading("Wordform", text="Словоформа")
         self.vocab_table.heading("Lemma", text="Лемма")
