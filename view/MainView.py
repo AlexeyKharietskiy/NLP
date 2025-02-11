@@ -38,6 +38,7 @@ class MainView(tk.Tk):
         search_label.grid(row=0, column=0, padx=10, pady=5, sticky='e')
         self.search_entry = tk.Entry(self, width=30)
         self.search_entry.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+        self.search_entry.bind('<Return>', lambda event: self.perform_search())
         self.search_button = tk.Button(self, text="Найти", command = self.perform_search)
         self.search_button.grid(row=0, column=2, padx=5, pady=5)
 
