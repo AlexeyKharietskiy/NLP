@@ -61,7 +61,7 @@ class MainView(tk.Tk):
             logger.error(f'{e}, {data}')
 
     def open_file(self):
-        filename = filedialog.askopenfilename(title='Открыть файл', filetypes=[("All files", "*.*"), ("DOC files", "*.doc"), ("DOCX files", "*.docx")])
+        filename = filedialog.askopenfilename(title='Открыть файл', filetypes=(("DOCX", "*.docx"), ("DOC", "*.doc")))
         data = self.controller.open_file(filename)
         self.populate_table(data)
 
