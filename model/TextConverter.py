@@ -14,4 +14,4 @@ class TextConverter:
             word.Quit()  # Закрываем приложение Word
             return text
         except Exception as e:
-            raise Exception(f"Ошибка при чтении файла: {e}")
+            raise Exception(f"Read file error: {e}")
