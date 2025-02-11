@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
-
+from logger import logger
 
 class MainView(tk.Tk):
     def __init__(self, controller):
@@ -54,8 +54,11 @@ class MainView(tk.Tk):
 
     def populate_table(self, data):
         self.clear_table()
-        for row in data:
-            self.vocab_table.insert("", tk.END, values=row)
+        try:
+            for row in data:
+                self.vocab_table.insert("", tk.END, values=row)
+        except TypeError as e:
+            logger.error(f'{e}, {data}')
 
     def open_file(self):
         filename = filedialog.askopenfilename(title='Открыть файл', filetypes=(("DOCX", "*.docx"), ("DOC", "*.doc")))
