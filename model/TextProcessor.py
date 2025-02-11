@@ -15,6 +15,22 @@ class TextProcessor:
         self.morph_tagger = NewsMorphTagger(self.emb)
         self.morph_vocab = MorphVocab()
 
+    @staticmethod
+    def is_russian_word(token):
+        if token.pos in {'PUNCT', 'SPACE'}:
+            return False
+
+        text = token.text.lower()
+
+        if all(
+                ('а' <= c <= 'я' or c == 'ё')
+                or c in "-'"
+                for c in text
+        ) and any(c.isalpha() for c in text):
+            return True
+
+        return False
+
     def process_text(self):
         doc = Doc(self.text)
         doc.segment(self.segmenter)
@@ -22,7 +38,7 @@ class TextProcessor:
 
         word_form_list = {}
         for token in doc.tokens:
-            if token.pos not in {'PUNCT', 'SPACE'}:
+            if self.is_russian_word(token):  # Проверяем, является ли слово русским
                 token.lemmatize(self.morph_vocab)
                 word_form = token.text.lower()
                 lemma = token.lemma
