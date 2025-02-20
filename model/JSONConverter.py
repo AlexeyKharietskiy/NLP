@@ -11,7 +11,7 @@ class JSONConverter:
     def load_data_from_json(self, default_word_form_list=None):
 
         if not os.path.exists(self.file_path):
-            logger.info(f"Didn't find file {self.file_path}. Use empty list.")
+            logger.info(f"Didn't find file {self.file_path}.")
             self.word_form_list = default_word_form_list or []
             return self.word_form_list
 
