@@ -70,23 +70,20 @@ class MainView(tk.Tk):
         self.populate_table(searched_word_list)
 
     def start_edit(self, event):
-        # Проверяем, что клик был сделан в последней колонке
-        col = self.vocab_table.identify_column(event.x)  # Получаем столбец
-        if col == "#4":  # "#4" — индекс последней колонки (начиная с 1)
-            item = self.vocab_table.identify_row(event.y)  # Получаем строку
-            if item != self.current_item:  # Если другая ячейка выбрана, завершаем предыдущее редактирование
+        col = self.vocab_table.identify_column(event.x)
+        if col == "#4":
+            item = self.vocab_table.identify_row(event.y)
+            if item != self.current_item:
                 self.finish_edit()
 
             self.current_item = item
-            cell_value = self.vocab_table.set(item, column="#4")  # Текущее значение ячейки
+            cell_value = self.vocab_table.set(item, column="#4")
 
-            # Создаем или обновляем виджет Entry
             if not self.edit_entry:
                 self.edit_entry = tk.Entry(self.vocab_table, width=20)
                 self.edit_entry.bind('<FocusOut>', self.finish_edit)
                 self.edit_entry.bind('<Return>', self.finish_edit)
 
-            # Размещаем Entry в ячейке
             bbox = self.vocab_table.bbox(item, "#4")
             if bbox:
                 self.edit_entry.place(x=bbox[0], y=bbox[1], width=bbox[2], height=bbox[3])
@@ -97,12 +94,11 @@ class MainView(tk.Tk):
 
     def finish_edit(self, event=None):
         if self.edit_entry and self.current_item:
-            new_value = self.edit_entry.get()  # Получаем новое значение
-            item_id = self.vocab_table.item(self.current_item)  # Получаем данные строки
-            word_form = item_id['values'][0]  # Словоформа находится в первом столбце
-            self.vocab_table.set(self.current_item, column="#4", value=new_value)  # Обновляем ячейку
+            new_value = self.edit_entry.get()
+            item_id = self.vocab_table.item(self.current_item)
+            word_form = item_id['values'][0]
+            self.vocab_table.set(self.current_item, column="#4", value=new_value)
 
-            # Обновляем данные в контроллере
             self.controller.update_word_form_morphological_info(word_form, new_value)
 
         self.current_item = None

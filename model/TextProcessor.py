@@ -38,7 +38,7 @@ class TextProcessor:
 
         word_form_list = {}
         for token in doc.tokens:
-            if self.is_russian_word(token):  # Проверяем, является ли слово русским
+            if self.is_russian_word(token):
                 token.lemmatize(self.morph_vocab)
                 word_form = token.text.lower()
                 lemma = token.lemma

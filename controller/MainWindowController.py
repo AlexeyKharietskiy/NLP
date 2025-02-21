@@ -81,6 +81,6 @@ class MainWindowController:
         for wf in self.word_form_list:
             if wf.word_form == word_form:
                 wf.morphological_info = new_info
-                logger.info(f"Morphological information for '{wf.word_form}' was updated: {wf.morphological_info}")
+                logger.info(f"Morphological information for '{wf.word_form}' was updated: '{wf.morphological_info}'")
                 break
         self.save_data_to_json()

@@ -4,8 +4,6 @@ from view.StartView import StartView
 from controller.MainWindowController import  MainWindowController
 from controller.InfoWindowController import  InfoWindowController
 
-# пока главный контроллер отвечает за все, предлагаю потом разбить
-# на более мелкие
 
 class UltimateController:
     def __init__(self):
