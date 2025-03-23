@@ -1,4 +1,3 @@
-natasha
 alembic
 asyncpg
 psycopg
@@ -9,3 +8,9 @@ fastapi
 pydantic
 pydantic-settings
 uvicorn
+
+natasha
+setuptools
+pymorphy2
+python-docx
+pymupdf
