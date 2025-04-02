@@ -1,12 +1,14 @@
 from fastapi import APIRouter, HTTPException
 import os
 
+from core.text.concordances import get_concordances
 from core.text.text_converter_factory import ParserFactory
 from core.text.text_processor import processor
 from core.transactions import (
     insert_text, 
     insert_words, 
     create_tables,
+    select_text,
     select_texts,
     select_words_from_text,
     select_word_by_pos,
@@ -59,3 +61,9 @@ def get_text_words_with_pos(text_id: int, pos: str):
 def get_text_words_by_content(text_id: int, content: str):
     words = select_words_by_content(text_id=text_id, content=content.lower())
     return words
+
+@router.get("/get_concordances/{word}", tags=['Concordance'])
+def get_text_concordances(word: str):
+    texts = select_texts()
+    concordances = get_concordances(texts, word)
+    return concordances
