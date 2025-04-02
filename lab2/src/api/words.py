@@ -8,7 +8,6 @@ from core.transactions import (
     insert_text, 
     insert_words, 
     create_tables,
-    select_text,
     select_texts,
     select_words_from_text,
     select_word_by_pos,
