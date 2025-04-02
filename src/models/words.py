@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Enum
 from sqlalchemy.orm import Mapped, mapped_column
 from models.dependencies import intpk
 from database import Base
@@ -15,28 +15,13 @@ from database import Base
 # pos_value = pos_enum.value
 
 # print(pos_value)  # Output: "имя существительное"
-class WordPos(enum.Enum):
-    NOUN = "имя существительное"
-    ADJ = "имя прилагательное"
-    VERB = "глагол"
-    INFN = "инфинитив"
-    PRTF = "причастие"
-    PRTS = "деепричастие"
-    NUMR = "числительное"
-    ADV = "наречие"
-    NPRO = "местоимение"
-    PRED = "предикатив"
-    PREP = "предлог"
-    CONJ = "союз"
-    PRCL = "частица"
-    INTJ = "междометие"
     
 class WordModel(Base):
     __tablename__ = 'words'
-    
     id: Mapped[intpk]
-    sentence_id: Mapped[int] = mapped_column(ForeignKey("sentences.id", ondelete="CASCADE"))
-    lemma: Mapped[str]  #=mapped_column() 
+    text_id: Mapped[int] = mapped_column(ForeignKey("texts.id", ondelete="CASCADE"))
     word: Mapped[str]
-    part_of_speech: Mapped[WordPos]
+    frequency: Mapped[int]
+    lemma: Mapped[str] 
+    part_of_speech: Mapped[str]
     feats: Mapped[str]

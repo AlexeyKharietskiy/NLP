@@ -2,16 +2,24 @@ from pydantic import BaseModel
 
 
 class WordSchema(BaseModel):
-    sentence_id: int
+    # text_id: int
     lemma: str
     word: str
     part_of_speech: str
-    feats: dict
+    frequency: int
+    feats: str
+    def __eq__(self, other):
+        if not isinstance(other, WordSchema):
+            return False
+        return self.word == other.word and\
+            self.part_of_speech == other.part_of_speech and\
+            self.feats == other.feats
     
 class WordGetSchema(BaseModel):
     id: int
-    sentence_id: int
+    text_id: int
     lemma: str
     word: str
+    frequency: int
     part_of_speech: str
-    feats: dict
+    feats: str
