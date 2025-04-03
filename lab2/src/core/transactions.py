@@ -1,4 +1,5 @@
-from sqlalchemy import and_, func, select
+from typing import Optional
+from sqlalchemy import and_, delete, func, select
 from sqlalchemy.orm import aliased
 from database import sync_session_factory, sync_engine, Base
 from models.texts import TextModel
@@ -43,7 +44,6 @@ def select_texts():
         texts = result.scalars().all()
         return texts
 
-
 def select_words_from_text(text_id: int):
     '''SELECT word, lemma, text_id, part_of_speech, feats, count(*) as frequency
 from words	
@@ -83,3 +83,24 @@ def select_words_by_content(text_id: int, content: str):
         words = result.scalars().all()
         return words
             
+def delete_text_by_id(text_id: int):
+    with sync_session_factory() as session:
+        text = session.get(TextModel, text_id)
+        if text: 
+            session.delete(text)
+            session.commit()
+        else:
+            session.rollback()
+        
+def update_text_content(text_id: int, new_content:Optional[str], new_title:Optional[str]):
+    with sync_session_factory() as session:
+        text = session.get(TextModel, text_id)
+        if new_content:
+            text.content = new_content
+        if new_title:
+            text.title=new_title
+        query = (delete(WordModel)
+                 .filter(WordModel.text_id==text_id))
+        session.execute(query)
+        # session.refresh(text)
+        session.commit()

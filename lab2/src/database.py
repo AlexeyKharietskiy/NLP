@@ -11,13 +11,7 @@ sync_engine = create_engine(
     echo=True
 )
 
-async_engine = create_async_engine(
-    url=settings.DATABASE_URL_asyncpg,
-    echo=True
-)
-
 sync_session_factory = sessionmaker(sync_engine)
-async_session_factory = async_sessionmaker(async_engine)
 
 class Base(DeclarativeBase):
     repr_cols_num = 3

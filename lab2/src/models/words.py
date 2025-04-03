@@ -1,20 +1,7 @@
-import enum
-from sqlalchemy import ForeignKey, Enum
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from models.dependencies import intpk
 from database import Base
-# data = {'pos': 'NOUN'}
-
-# # Получаем значение из словаря
-# pos_key = data['pos']
-
-# # Получаем элемент перечисления по имени
-# pos_enum = WordPos[pos_key]
-
-# # Получаем строковое значение
-# pos_value = pos_enum.value
-
-# print(pos_value)  # Output: "имя существительное"
     
 class WordModel(Base):
     __tablename__ = 'words'
@@ -25,3 +12,5 @@ class WordModel(Base):
     lemma: Mapped[str] 
     part_of_speech: Mapped[str]
     feats: Mapped[str]
+    
+    text: Mapped['TextModel'] = relationship()
