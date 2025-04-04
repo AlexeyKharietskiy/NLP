@@ -8,17 +8,20 @@ from core.transactions import (
 router = APIRouter()
 
 
-@router.get("/get_text_words/{text_id}", tags=['Select'])
+@router.get("/words/{text_id}", tags=['Words'])
 def get_all_text_words(text_id: int):
     words = select_words_from_text(text_id=text_id)
-    return words
+    return {'data': words}
 
-@router.get("/get_text_words_with_pos/{text_id}/{pos}", tags=['Select'])
+@router.get("/words/pos/{text_id}", tags=['Words'])
 def get_text_words_with_pos(text_id: int, pos: str):
     words = select_word_by_pos(text_id=text_id, pos=pos.lower())
-    return words
+    return {'data': words}
 
-@router.get("/get_text_words_by_content/{text_id}", tags=['Select'])
+@router.get("/words/wordform/{text_id}", tags=['Words'])
 def get_text_words_by_content(text_id: int, content: str):
-    words = select_words_by_content(text_id=text_id, content=content.lower())
-    return words
+    try:
+        words = select_words_by_content(text_id=text_id, content=content.lower())
+    except ValueError:
+        raise HTTPException(status_code=404, detail=f"No words found containing '{content}' in text with id: {text_id}")
+    return {'data': words}

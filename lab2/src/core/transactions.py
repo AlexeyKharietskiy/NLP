@@ -44,6 +44,16 @@ def select_texts():
         texts = result.scalars().all()
         return texts
 
+def select_text_by_id(text_id: int):
+    with sync_session_factory() as session:
+        query = (
+            select(TextModel)
+            .filter(TextModel.id==text_id)
+            )
+        result = session.execute(query)
+        text = result.scalars().first()
+        return text
+
 def select_words_from_text(text_id: int):
     '''SELECT word, lemma, text_id, part_of_speech, feats, count(*) as frequency
 from words	
@@ -74,13 +84,15 @@ def select_words_by_content(text_id: int, content: str):
     with sync_session_factory() as session:
         query = (
             select(WordModel)
-            .filter(and_(
+            .where(and_(
                 WordModel.word.contains(content),
                 WordModel.text_id==text_id
                 ))
             )
         result = session.execute(query)
         words = result.scalars().all()
+        if not words:
+            raise ValueError(f"No words found containing '{content}' for text_id {text_id}")
         return words
             
 def delete_text_by_id(text_id: int):
@@ -91,10 +103,13 @@ def delete_text_by_id(text_id: int):
             session.commit()
         else:
             session.rollback()
+            raise ValueError(f'No record with such id: {text_id}')
         
-def update_text_content(text_id: int, new_content:Optional[str], new_title:Optional[str]):
+def update_text_values(text_id: int, new_content:Optional[str], new_title:Optional[str]):
     with sync_session_factory() as session:
         text = session.get(TextModel, text_id)
+        if not text:
+            raise ValueError(f'No record with such id: {text_id}')
         if new_content:
             text.content = new_content
         if new_title:
@@ -102,5 +117,4 @@ def update_text_content(text_id: int, new_content:Optional[str], new_title:Optio
         query = (delete(WordModel)
                  .filter(WordModel.text_id==text_id))
         session.execute(query)
-        # session.refresh(text)
         session.commit()

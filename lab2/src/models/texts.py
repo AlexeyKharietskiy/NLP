@@ -13,4 +13,4 @@ class TextModel(Base):
     create_at: Mapped[create_at]
     updated_at: Mapped[updated_at]
     
-    words: Mapped[list['WordModel']] = relationship()
+    # words: Mapped[list['WordModel']] = relationship()

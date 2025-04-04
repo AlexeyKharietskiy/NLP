@@ -13,4 +13,4 @@ class WordModel(Base):
     part_of_speech: Mapped[str]
     feats: Mapped[str]
     
-    text: Mapped['TextModel'] = relationship()
+    # text: Mapped['TextModel'] = relationship()
