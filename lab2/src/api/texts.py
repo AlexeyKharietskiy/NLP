@@ -17,6 +17,7 @@ from schemas.texts import TextSchema
 router = APIRouter()
 @router.post("/texts/upload_file/{title}", tags=['Texts'])
 def load_file(file_path: str, title: str):
+    '''Загрузка файла с текстом, + название текста'''
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
     parser = ParserFactory.get_parser(file_path)
@@ -32,6 +33,7 @@ def load_file(file_path: str, title: str):
 
 @router.get('/texts/concrete_text', tags=['Texts'])
 def get_text(text_id: int):
+    '''Получение текста по id'''
     text = select_text_by_id(text_id)
     if not text:
         raise HTTPException(status_code=404, detail=f'Do not find text with such ID: {text_id}')
@@ -39,11 +41,13 @@ def get_text(text_id: int):
     
 @router.get("/texts", tags=['Texts'])
 def get_texts():
+    '''Получение всех текстов'''
     texts = select_texts()
     return {'data': texts}
 
 @router.delete('/texts/delete_concrete_text', tags=['Texts'])
 def delete_text(text_id: int):
+    '''Удаление текста по id'''
     try:
         delete_text_by_id(text_id)
     except ValueError:
@@ -52,6 +56,7 @@ def delete_text(text_id: int):
 
 @router.post('/texts/update_concrete_text', tags=['Update'])
 def update_text(text_id: int, new_content:Optional[str]=None, new_title:Optional[str]=None):
+    '''Обновление текста, можно обновить как содержимое так и название, если изменили содержимое, то и словоформы меняются'''
     try:
         update_text_values(text_id=text_id, new_content=new_content, new_title=new_title)
         if new_content:

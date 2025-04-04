@@ -55,9 +55,6 @@ def select_text_by_id(text_id: int):
         return text
 
 def select_words_from_text(text_id: int):
-    '''SELECT word, lemma, text_id, part_of_speech, feats, count(*) as frequency
-from words	
-group by word, lemma, text_id, part_of_speech, feats'''
     with sync_session_factory() as session:
         query = (
             select(WordModel)

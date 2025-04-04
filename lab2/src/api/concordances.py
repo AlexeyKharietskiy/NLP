@@ -12,6 +12,7 @@ router = APIRouter()
 
 @router.get("/concordances/{word}", tags=['Concordances'])
 def get_text_concordances(word: str):
+    '''Получение конкордансов для заданного слова из всех текстов'''
     texts = select_texts()
     concordances = get_concordances(texts, word)
     if not concordances:
