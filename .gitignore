@@ -1,0 +1,7 @@
+.idea
+.vscode
+.env
+data
+__pycache__/
+*.py[cod]
+data
