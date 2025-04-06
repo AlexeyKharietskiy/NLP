@@ -1,18 +1,16 @@
-from typing import Annotated
-
-from sqlalchemy import String, create_engine
+from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-from config import settings
+from src.database.config import settings
 
-sync_engine = create_engine(
+engine = create_engine(
     url=settings.DATABASE_URL_psycopg,
-    echo=True,
+    echo=False,
     # pool_size=5,
     # max_overflow=10,
 )
 
-session_factory = sessionmaker(sync_engine)
+session_factory = sessionmaker(engine)
 
 
 class Base(DeclarativeBase):
