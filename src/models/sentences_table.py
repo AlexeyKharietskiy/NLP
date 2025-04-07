@@ -10,3 +10,7 @@ class SentenceModel(Base):
     text_id: Mapped[int] = mapped_column(ForeignKey('texts.id', ondelete='CASCADE'))
     sentence: Mapped[str]
     order: Mapped[int]
+    
+    words: Mapped[list['WordModel']] = relationship(
+        back_populates='sentences',
+    )

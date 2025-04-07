@@ -9,7 +9,10 @@ class TextModel(Base):
     
     id: Mapped[intpk]
     title: Mapped[str] = mapped_column(unique=True,)
-    content: Mapped[str]  #=mapped_column() 
+    content: Mapped[str] 
     create_at: Mapped[create_at]
     updated_at: Mapped[updated_at]
+    sentences: Mapped[list['SentenceModel']] = relationship(
+        back_populates='texts'
+    )
     
