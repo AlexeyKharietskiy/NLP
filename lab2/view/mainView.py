@@ -6,7 +6,6 @@ import os
 
 import requests
 from concordanceView import ConcordanceView
-from pydantic import BaseModel
 
 
 class CorpusManagerView(tk.Toplevel):
@@ -29,8 +28,9 @@ class CorpusManagerView(tk.Toplevel):
 
         self.right_panel = tk.Frame(self.main_panel, bg="#f0f0f0", padx=10, pady=10)
         self.main_panel.add(self.right_panel)
-
+        self.current_text_id: int = 0
         self.create_right_panel()
+
 
     def create_menu(self):
         menubar = tk.Menu(self)
@@ -69,6 +69,7 @@ class CorpusManagerView(tk.Toplevel):
             pady=5,
             bg="white",
             height=10,
+            state='disabled'
         )
         self.text_info.pack(fill=tk.BOTH, expand=False)
 
@@ -77,7 +78,7 @@ class CorpusManagerView(tk.Toplevel):
         self.save_button = tk.Button(
             info_frame,
             text="Сохранить",
-            command=self.save_text,
+            command=self.update_text,
             state=tk.DISABLED
         )
         self.save_button.pack(pady=5, anchor='e')
@@ -86,12 +87,23 @@ class CorpusManagerView(tk.Toplevel):
         controls_frame.pack(fill=tk.X, pady=(30, 0))
 
         tk.Label(controls_frame, text="Часть речи:").pack(side=tk.LEFT, padx=(0, 5))
-
+        poses = (
+            "имя существительное", 
+            "глагол", 
+            "имя прилагательное", 
+            "наречие", 
+            "местоимение",
+            "предлог", 
+            "частица",
+            "междометие", 
+            "подчинительный союз", 
+            "сочинительный союз",
+            "числительное"
+            )
+            
         self.part_of_speech = ttk.Combobox(
             controls_frame,
-            values=["имя cуществительное", "глагол", "имя прилагательное", "наречие", "местоимение",
-                    "предлог", "частица", "междометие", "подчинительный союз", "сочинительный союз",
-                    "числительное"],
+            values=poses,
             state="readonly",
             width=20
         )
@@ -119,8 +131,11 @@ class CorpusManagerView(tk.Toplevel):
         revert_btn = ttk.Button(
             search_frame,
             text="Сброс",
-            command=lambda: [self.update_words_table(self.words_data),
-                             self.search_entry.delete(0, tk.END)],
+            command=lambda: [
+                self.text_info.tag_remove("highlight", "1.0", tk.END),
+                self.search_entry.delete(0, tk.END), 
+                self.pull_all_words()
+                ], 
             width=8
         )
         revert_btn.pack(side=tk.LEFT, padx=5)
@@ -190,35 +205,44 @@ class CorpusManagerView(tk.Toplevel):
         self.tree.bind("<<TreeviewSelect>>", self.on_text_select)
 
     def add_titles(self):
+        self.tree.delete(*self.tree.get_children())
         response = requests.get(
             f"http://127.0.0.1:8000/texts"
         )
         response.raise_for_status()
         data = response.json()
-        self.texts_data = data.get('data', {})
-        for row in self.texts_data:
-            self.tree.insert('', tk.END, values=row.get('title', ''))
-
-
+        texts_data = data.get('data', {})
+        for row in texts_data:
+            self.tree.insert('', tk.END, values=(row['title'],), iid = row['id'])
 
     def filter_by_criteria(self, event=None):
         criteria = str(self.part_of_speech.get())
-        filtered_words = []
-        if criteria:
-            for row in self.words_data:
-                if row.get('part_of_speech', '') == criteria:
-                    filtered_words.append(row)
-            self.update_words_table(filtered_words)
+        url = f'http://127.0.0.1:8000/words/pos/'
+        params = {
+            "text_id": self.current_text_id,
+            "pos": criteria,
+        }
+        response = requests.get(url=url, params=params)
+        response.raise_for_status()
+    
+        self.update_words_table(response.json()['data'])
 
     def search_by_substr(self):
         """Поиск по подстроке"""
         search_term = self.search_entry.get()
         if not search_term:
             return
-
-        searched_data = [row for row in self.words_data if search_term in row.get('word', '').lower()]
-        self.update_words_table(searched_data)
-
+        
+        url = f'http://127.0.0.1:8000/words/wordform/'
+        params = {
+            "text_id": self.current_text_id,
+            "word": search_term,
+        }
+        response_words = requests.get(url, params=params)
+        response_words.raise_for_status()
+        words = response_words.json()
+        
+        self.update_words_table(words['data'])
 
         content = self.text_info.get(1.0, tk.END)
         if search_term in content:
@@ -235,17 +259,18 @@ class CorpusManagerView(tk.Toplevel):
                 start = end
 
             self.text_info.tag_config("highlight", background="LightSeaGreen")
-            # self.text_info.see(start)
         else:
             messagebox.showinfo("Поиск", f"Подстрока '{search_term}' не найдена")
 
     def concordance_search(self):
         search_term = self.search_entry.get()
-        print(search_term)
         if not search_term:
             return
-        searched_data = [row for row in self.words_data if search_term == row.get('word', '').lower()]
-        if not bool(searched_data):
+        all_items = self.word_table.get_children()
+
+        word_values = [self.word_table.item(item, "values")[0] for item in all_items 
+                       if self.word_table.item(item, "values")[0] == search_term]
+        if not word_values:
             messagebox.showinfo("Поиск", f"Конкорданс для слова {search_term} не найден. Пожалуйста, "
                                          f"попробуйте ввести целое слово")
         response_concordance = requests.get(
@@ -253,54 +278,41 @@ class CorpusManagerView(tk.Toplevel):
         )
         response_concordance.raise_for_status()
         data = response_concordance.json()
-        self.concordances = data.get('data', {})
-        print(self.concordances)
-        concoradnce_view = ConcordanceView(self, search_term, self.concordances)
-
+        self.concordances = data['data']
+        ConcordanceView(self, search_term, self.concordances)
 
     def update_words_table(self, searched_words):
-        for item in self.word_table.get_children(''):
-            self.word_table.delete(item)
+        self.word_table.delete(*self.word_table.get_children())
         if searched_words:
             for word in searched_words:
-                self.word_table.insert("", tk.END, values=(word.get('word', ''), word.get('frequency', ''),
-                                                           word.get('lemma', ''), word.get('part_of_speech', ''),
-                                                           word.get('feats', '')))
-        else: messagebox.showinfo("Поиск", f"Не удалось обновить таблицу. Возможно,"
-                                           f" выбранного критерия нет в списке")
-
+                values=(
+                    word['word'],
+                    word['frequency'],
+                    word['lemma'],
+                    word['part_of_speech'],
+                    word['feats'],
+                )
+                self.word_table.insert("", tk.END, values=values)
 
     def start_editing(self, event=None):
         """Активация редактирования по клику"""
-        if not self.selected_text:
-            messagebox.showwarning("Ошибка", "Пожалуйста, выберите текст.")
-            return
-
         if self.text_info.cget('state') == tk.DISABLED:
             self.text_info.config(state=tk.NORMAL)
             self.save_button.config(state=tk.NORMAL)
             self.text_info.focus_set()
 
-    def save_text(self):
+    def update_text(self):
         """Сохранение изменений в файл"""
         try:
             content = self.text_info.get(1.0, tk.END)
             url = 'http://127.0.0.1:8000/texts/update_concrete_text/'
             params = {
-                "text_id": int(self.selected_text.get('id', '')),
+                "text_id": self.current_text_id,
                 "new_content": content,
                 "new_title": None
             }
-            response = requests.post(url, json=params)
-            print(response.json())
-            response_words = requests.get(
-                f"http://127.0.0.1:8000/words/{self.selected_text.get('id', '')}"
-            )
-            response_words.raise_for_status()
-            data2 = response_words.json()
-            self.words_data = data2.get('data', {})
-            # print(self.words_data)
-            self.update_words_table(self.words_data)
+            requests.post(url, json=params)
+            self.pull_all_words()
 
         except Exception as e:
             messagebox.showerror("Ошибка", f"Не удалось изменить текст:\n{str(e)}")
@@ -325,55 +337,31 @@ class CorpusManagerView(tk.Toplevel):
             response = requests.post(url, params=params)
             self.add_titles()
 
-
-
     def on_text_select(self, event):
+        
         if self.text_info.get("1.0", tk.END):
             if self.text_info.cget('state') == tk.DISABLED:
                 self.text_info.config(state=tk.NORMAL)
             self.text_info.delete("1.0", tk.END)
-        selected_item = self.tree.focus()
-        if selected_item:
-            title = self.tree.item(selected_item)["values"][0]
-            print(title)
-            self.selected_text = None
-            for row in self.texts_data:
-                if row.get('title', '') == title:
-                    self.selected_text = row
+        self.current_text_id = self.tree.focus()
+        if self.current_text_id:
             response = requests.get(
-                f"http://127.0.0.1:8000/texts/concrete_text?text_id={self.selected_text.get('id', '')}"
+                f"http://127.0.0.1:8000/texts/concrete_text?text_id={self.current_text_id}"
             )
             response.raise_for_status()
-            data = response.json()
-            self.text_data = data.get('data', {})
-            # print(f"text_data: {self.text_data}")
-            self.text_info.insert( tk.END, self.text_data.get('content', ''))
+            text_data = response.json()['data']
+            self.text_info.insert(tk.END, text_data['content'])
             self.text_info.config(state=tk.DISABLED)
-            response_words = requests.get(
-                f"http://127.0.0.1:8000/words/{self.selected_text.get('id', '')}"
+            self.pull_all_words()
+
+    def pull_all_words(self):
+        response_words = requests.get(
+                f"http://127.0.0.1:8000/words/{self.current_text_id}"
             )
-            response_words.raise_for_status()
-            data2 = response_words.json()
-            self.words_data = data2.get('data', {})
-            # print(self.words_data)
-            self.update_words_table(self.words_data)
-    def update_text_info(self, file_path):
-        """Обновление информации о файле"""
-        self.current_file_path = file_path
-        self.text_info.config(state=tk.NORMAL)
-        self.text_info.delete(1.0, tk.END)
-
-        try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-                self.text_info.insert(tk.END, content)
-        except Exception as e:
-            self.text_info.insert(tk.END, f"Ошибка чтения файла: {str(e)}")
-
-        self.text_info.config(state=tk.DISABLED)
-        self.save_button.config(state=tk.DISABLED)
-
-
+        response_words.raise_for_status()
+        words = response_words.json()
+        self.update_words_table(words['data'])
+        
 if __name__ == "__main__":
     root = tk.Tk()
     app = CorpusManagerView(root)

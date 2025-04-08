@@ -29,10 +29,10 @@ class StartView(tk.Tk):
         about_button.place(relx=0.5, rely=0.7, anchor='center')
 
     def open_info_view(self):
-        info_view = InfoView(self)
+        InfoView(self)
 
     def open_main_view(self):
-        main_view = CorpusManagerView(self)
+       CorpusManagerView(self)
 
     def main(self):
         self.create_widgets()
