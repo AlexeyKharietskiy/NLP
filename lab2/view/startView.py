@@ -11,8 +11,8 @@ class StartView(tk.Tk):
         self.configure(bg='lavender blush')
         self.title("Корпусный менеджер")
         self.geometry("800x600")
-        self.style = ttk.Style()
-        self.style.configure("TButton", background='lavender blush', font=("Helvetica", 13),
+        self.parent_style = ttk.Style()
+        self.parent_style.configure("TButton", background='lavender blush', font=("Helvetica", 13),
                              padding=20)
 
     def create_widgets(self):

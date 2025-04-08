@@ -15,9 +15,6 @@ class CorpusManagerView(tk.Toplevel):
         self.geometry("1200x700")
         self.selected_text = None
         self.concordances = None
-        self.style = ttk.Style()
-        self.style.configure("TButton", background='grey76', font=("Helvetica", 10),
-                             padding=5)
 
         self.create_menu()
 
@@ -120,7 +117,7 @@ class CorpusManagerView(tk.Toplevel):
         self.search_entry.pack(side=tk.LEFT, padx=(3, 5))
 
 
-        search_btn = ttk.Button(
+        search_btn = tk.Button(
             search_frame,
             text="Найти",
             command=self.search_by_substr,
@@ -128,7 +125,7 @@ class CorpusManagerView(tk.Toplevel):
         )
         search_btn.pack(side=tk.LEFT)
 
-        revert_btn = ttk.Button(
+        revert_btn = tk.Button(
             search_frame,
             text="Сброс",
             command=lambda: [
@@ -140,7 +137,7 @@ class CorpusManagerView(tk.Toplevel):
         )
         revert_btn.pack(side=tk.LEFT, padx=5)
 
-        concordance_btn = ttk.Button(
+        concordance_btn = tk.Button(
             search_frame,
             text="Показать конкорданс",
             command=self.concordance_search,
@@ -229,38 +226,48 @@ class CorpusManagerView(tk.Toplevel):
 
     def search_by_substr(self):
         """Поиск по подстроке"""
-        search_term = self.search_entry.get()
+        search_term = str(self.search_entry.get())
         if not search_term:
             return
+        try:
+            url = f'http://127.0.0.1:8000/words/wordform/'
+            params = {
+                "text_id": self.current_text_id,
+                "word": search_term,
+            }
+            response_words = requests.get(url, params=params)
+            response_words.raise_for_status()
+            words = response_words.json()
         
-        url = f'http://127.0.0.1:8000/words/wordform/'
-        params = {
-            "text_id": self.current_text_id,
-            "word": search_term,
-        }
-        response_words = requests.get(url, params=params)
-        response_words.raise_for_status()
-        words = response_words.json()
-        
-        self.update_words_table(words['data'])
+            self.update_words_table(words['data'])
 
-        content = self.text_info.get(1.0, tk.END)
-        if search_term in content:
-            self.text_info.tag_remove("highlight", 1.0, tk.END)
+            content = self.text_info.get(1.0, tk.END)
+            if search_term in content:
+                self.text_info.tag_remove("highlight", 1.0, tk.END)
 
-            # подсветка вхождений
-            start = "1.0"
-            while True:
-                start = self.text_info.search(search_term, start, stopindex=tk.END)
-                if not start:
-                    break
-                end = f"{start}+{len(search_term)}c"
-                self.text_info.tag_add("highlight", start, end)
-                start = end
+                # подсветка вхождений
+                start = "1.0"
+                while True:
+                    start = self.text_info.search(search_term, start, stopindex=tk.END)
+                    if not start:
+                        break
+                    end = f"{start}+{len(search_term)}c"
+                    self.text_info.tag_add("highlight", start, end)
+                    start = end
 
-            self.text_info.tag_config("highlight", background="LightSeaGreen")
-        else:
-            messagebox.showinfo("Поиск", f"Подстрока '{search_term}' не найдена")
+                self.text_info.tag_config("highlight", background="LightSeaGreen")
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 404:
+                try:
+                    error_detail = e.response.json().get("detail", "Слово не найдено")
+                    print(f"Ошибка 404: {error_detail}")
+                except ValueError:
+                    print(f"Ошибка 404: Слово не найдено (без дополнительных деталей)")
+            else:
+                print(f"HTTP ошибка: {e}")
+        except Exception as e:
+            print(f"Произошла ошибка: {e}")
+
 
     def concordance_search(self):
         search_term = self.search_entry.get()
@@ -268,18 +275,33 @@ class CorpusManagerView(tk.Toplevel):
             return
         all_items = self.word_table.get_children()
 
-        word_values = [self.word_table.item(item, "values")[0] for item in all_items 
-                       if self.word_table.item(item, "values")[0] == search_term]
-        if not word_values:
-            messagebox.showinfo("Поиск", f"Конкорданс для слова {search_term} не найден. Пожалуйста, "
-                                         f"попробуйте ввести целое слово")
-        response_concordance = requests.get(
+        # word_values = [self.word_table.item(item, "values")[0] for item in all_items
+        #                if self.word_table.item(item, "values")[0] == search_term]
+        # print(word_values)
+        # if not word_values:
+        #     messagebox.showinfo("Поиск", f"Конкорданс для слова {search_term} не найден. Пожалуйста, "
+        #                                  f"попробуйте ввести целое слово")
+        try:
+            response_concordance = requests.get(
             f"http://127.0.0.1:8000/concordances/{search_term}"
-        )
-        response_concordance.raise_for_status()
-        data = response_concordance.json()
-        self.concordances = data['data']
-        ConcordanceView(self, search_term, self.concordances)
+            )
+
+            response_concordance.raise_for_status()
+            data = response_concordance.json()
+            self.concordances = data['data']
+            ConcordanceView(self, search_term, self.concordances)
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 404:
+                try:
+                    error_detail = e.response.json().get("detail", "Слово не найдено")
+                    print(f"Ошибка 404: {error_detail}")
+                except ValueError:
+                    print(f"Ошибка 404: Слово не найдено (без дополнительных деталей)")
+            else:
+                print(f"HTTP ошибка: {e}")
+        except Exception as e:
+            print(f"Произошла ошибка: {e}")
+
 
     def update_words_table(self, searched_words):
         self.word_table.delete(*self.word_table.get_children())
