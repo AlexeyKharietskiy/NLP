@@ -5,7 +5,7 @@ from database import sync_session_factory, sync_engine, Base
 from models.texts import TextModel
 from models.words import WordModel
 from schemas.texts import TextSchema
-from schemas.words import WordSchema, WordGetSchema
+from schemas.words import WordSchema
 
 
 def create_tables():

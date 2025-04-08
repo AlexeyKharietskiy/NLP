@@ -14,12 +14,3 @@ class WordSchema(BaseModel):
         return self.word == other.word and\
             self.part_of_speech == other.part_of_speech and\
             self.feats == other.feats
-    
-class WordGetSchema(BaseModel):
-    id: int
-    text_id: int
-    lemma: str
-    word: str
-    frequency: int
-    part_of_speech: str
-    feats: str

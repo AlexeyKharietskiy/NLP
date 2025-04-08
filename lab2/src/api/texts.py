@@ -13,7 +13,6 @@ from core.transactions import (
     delete_text_by_id,
     update_text_values
 )
-from pydantic import BaseModel
 from schemas.texts import TextSchema
 router = APIRouter()
 @router.post("/texts/upload_file/{title}", tags=['Texts'])
@@ -54,18 +53,15 @@ def delete_text(text_id: int):
     except ValueError:
         HTTPException(status_code=404, detail=f'Do not find text with such ID: {text_id}') 
     return {'message': f'Successfully delete text with text_id: {text_id}'}
-class UpdateTextRequest(BaseModel):
-    text_id: int
-    new_content: Optional[str] = None
-    new_title: Optional[str] = None
+
 @router.post('/texts/update_concrete_text', tags=['Update'])
-def update_text(req: UpdateTextRequest):
+def update_text(req: TextSchema):
     '''Обновление текста, можно обновить как содержимое так и название, если изменили содержимое, то и словоформы меняются'''
     try:
-        update_text_values(text_id=req.text_id, new_content=req.new_content, new_title=req.new_title)
-        if req.new_content:
-            words = processor.get_tokens(req.new_content)
-            insert_words(words=words, text_id=req.text_id)
+        update_text_values(text_id=req.id, new_content=req.content, new_title=req.title)
+        if req.content:
+            words = processor.get_tokens(req.content)
+            insert_words(words=words, text_id=req.id)
     except ValueError:
-        HTTPException(status_code=404, detail=f'Do not find text with such ID: {req.text_id}')
-    return {'message': f'Successfully update text with id: {req.text_id}'}
+        HTTPException(status_code=404, detail=f'Do not find text with such ID: {req.id}')
+    return {'message': f'Successfully update text with id: {req.id}'}
