@@ -18,11 +18,10 @@ class TextProcessor:
             "sentences": [],
         }
 
-        for sent_idx, sentence in enumerate(doc.sents, 1):
+        for sentence in doc.sents:
             sentence_text = sentence.text
             result["sentences"].append({
                 "sentence": sentence_text,
-                "order": sent_idx
             })
         return result
 
