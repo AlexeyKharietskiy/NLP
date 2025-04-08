@@ -35,7 +35,7 @@ def select_sentences(text_id: int):
         sentences = res.scalars().all()
         return sentences
     
-def select_select_words(sent_id: int)
+def select_select_words(sent_id: int):
     with session_factory() as session:
         query = (
             select(WordModel).

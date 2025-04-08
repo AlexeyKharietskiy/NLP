@@ -13,6 +13,6 @@ class TextModel(Base):
     create_at: Mapped[create_at]
     updated_at: Mapped[updated_at]
     sentences: Mapped[list['SentenceModel']] = relationship(
-        back_populates='texts'
+        back_populates='text'
     )
     

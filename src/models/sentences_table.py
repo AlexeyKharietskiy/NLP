@@ -11,5 +11,9 @@ class SentenceModel(Base):
     sentence: Mapped[str]
     
     words: Mapped[list['WordModel']] = relationship(
-        back_populates='sentences',
+        back_populates='sentence',
+    )
+
+    text: Mapped['TextModel'] = relationship(
+        back_populates='sentences'
     )
