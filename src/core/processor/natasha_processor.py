@@ -35,7 +35,7 @@ class TextProcessor:
         result =  {
             'words': []
         }
-        for pos, token in enumerate(sent):
+        for token in sent:
             if token.pos in {
                 "NOUN", "VERB", "ADJ", "NUMR"
                 "ADV", "PRON", "PROPN", "PART", 
@@ -45,7 +45,6 @@ class TextProcessor:
                 }:
                     result["words"].append({
                         "word": token.text,
-                        "position": pos,
                         'head': [head.word for head in sentence.tokens if head.id == token.head_id][0],
                         'rel': token.rel
                     })
