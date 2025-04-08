@@ -5,11 +5,10 @@ from src.models.column_types import intpk
 
 class SentenceModel(Base):
     __tablename__ = 'sentences'
-    repr_cols_num = 4
+    repr_cols_num = 3
     id: Mapped[intpk]
     text_id: Mapped[int] = mapped_column(ForeignKey('texts.id', ondelete='CASCADE'))
     sentence: Mapped[str]
-    order: Mapped[int]
     
     words: Mapped[list['WordModel']] = relationship(
         back_populates='sentences',
