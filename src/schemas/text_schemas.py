@@ -3,3 +3,6 @@ from pydantic import BaseModel
 class TextSchema(BaseModel):
     content: str
     title: str
+    
+class TextContentUpdateSchema(BaseModel):
+    new_content: str
