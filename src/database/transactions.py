@@ -12,13 +12,14 @@ from src.schemas.word_schemas import WordSchema
 def create_tables():
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
+    engine.echo = True
+    
     
 def select_text_titles():
     with session_factory() as session:
         query = select(TextModel.id, TextModel.title)
         res = session.execute(query)
-        titles = res.scalars().all
-        return titles
+        return [{"id": row[0], "title": row[1]} for row in res]
     
 def select_text(id: int):
     with session_factory() as session:
@@ -35,11 +36,11 @@ def select_sentences(text_id: int):
         sentences = res.scalars().all()
         return sentences
     
-def select_select_words(sent_id: int):
+def select_words(sent_id: int):
     with session_factory() as session:
         query = (
             select(WordModel).
-            filter(TextModel.sentence_id == sent_id)
+            filter(WordModel.sentence_id == sent_id)
         )
         res = session.execute(query)
         words = res.scalars().all()
@@ -63,7 +64,7 @@ def insert_words(words: list[WordSchema], sentence_id : int):
         word_models = [
             WordModel(
                 word=word.word, 
-                sentence_id= sentence_id,
+                sentence_id=sentence_id,
                 head=word.head_word,
                 relation=word.relation
                 ) 
@@ -72,23 +73,56 @@ def insert_words(words: list[WordSchema], sentence_id : int):
         session.add_all(word_models)
         session.commit()
         
+def insert_all_data(text: TextSchema, syntax_constructs: list[dict]):
+    with session_factory() as session:
+        text_model = TextModel(title=text.title, content=text.content)
+        session.add(text_model)
+        session.flush()
+        for syntax_construct in syntax_constructs:
+            sent = SentenceModel(sentence=syntax_construct['sentence'], text_id=text_model.id)
+            session.add(sent)
+            session.flush()
+            word_models=[]
+            for words_schema in syntax_construct['words']:
+                word_models.append(
+                    WordModel(
+                        word=words_schema.word,
+                        head=words_schema.head_word, 
+                        relation=words_schema.relation, 
+                        sentence_id=sent.id,
+                    )) 
+                    
+                session.add_all(word_models)
+                session.flush()
+        session.commit()
+        
 def insert_text(text: TextSchema):
     with session_factory() as session:
         text_model = TextModel(title=text.title, content=text.content)
         session.add(text_model)
+        session.flush()
         session.commit()
+        return text_model.id
         
-def insert_sentences(sentences: list[SentenceSchema], text_id: str):
+def insert_sentences(syntax_constructs: list[dict], text_id: str):
     with session_factory() as session:
-        sentence_models = [
-            SentenceModel(
-                sentence= sentence.sentence,
-                text_id=text_id
-            )
-            for sentence in sentences
-        ]
-        session.add_all(sentence_models)
-        session.commit()    
+        for syntax_construct in syntax_constructs:
+            sent = SentenceModel(sentence=syntax_construct['sentence'], text_id=text_id)
+            session.add(sent)
+            session.flush()
+            word_models=[]
+            for words_schema in syntax_construct['words']:
+                word_models.append(
+                    WordModel(
+                        word=words_schema.word,
+                        head=words_schema.head_word, 
+                        relation=words_schema.relation, 
+                        sentence_id=sent.id,
+                    )) 
+                    
+                session.add_all(word_models)
+                session.flush()
+        session.commit()
         
 def select_words_by_rel(rel: str, sentence_id: int):
     with session_factory() as session:
@@ -97,7 +131,7 @@ def select_words_by_rel(rel: str, sentence_id: int):
             .where(
                 and_(
                     WordModel.sentence_id == sentence_id,
-                    WordModel.rel == rel
+                    WordModel.relation == rel
                     )
             )
         )
@@ -121,7 +155,17 @@ def select_words_by_substr(substr: str, sentence_id: int):
     
     
 def update_text_content(new_content: str, text_id: int):
+    engine.echo = True
     with session_factory() as session:
         text = session.get(TextModel, text_id)
         text.content = new_content
+        session.commit()
+        
+def delete_sentences(text_id: int):
+    with session_factory() as session:
+        query = (
+            delete(SentenceModel)
+            .where(SentenceModel.text_id==text_id)
+        )
+        session.execute(query)
         session.commit()
