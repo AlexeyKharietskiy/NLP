@@ -1,13 +1,13 @@
 from typing import Optional
 from sqlalchemy import and_, delete, func, select
 from sqlalchemy.orm import aliased, selectinload
-from src.database.database import session_factory, engine, Base
-from src.models.texts_table import TextModel
-from src.models.words_table import WordModel
-from src.models.sentences_table import SentenceModel
-from src.schemas.sentence_schemas import SentenceSchema
-from src.schemas.text_schemas import TextSchema
-from src.schemas.word_schemas import WordSchema
+from database.database import session_factory, engine, Base
+from models.texts_table import TextModel
+from models.words_table import WordModel
+from models.sentences_table import SentenceModel
+from schemas.sentence_schemas import SentenceSchema
+from schemas.text_schemas import TextSchema
+from schemas.word_schemas import WordSchema
 
 def create_tables():
     Base.metadata.drop_all(engine)

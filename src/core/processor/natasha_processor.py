@@ -1,6 +1,6 @@
 from natasha import Segmenter, MorphVocab, NewsEmbedding, NewsSyntaxParser, Doc, NewsMorphTagger
 
-from src.schemas.word_schemas import WordSchema
+from schemas.word_schemas import WordSchema
 
 class TextProcessor:
     def __init__(self):

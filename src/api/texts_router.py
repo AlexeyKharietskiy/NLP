@@ -2,9 +2,9 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException
 import os
 
-from src.core.parser.parser_factory import ParserFactory
-from src.core.processor.natasha_processor import TextProcessor
-from src.database.transactions import (
+from core.parser.parser_factory import ParserFactory
+from core.processor.natasha_processor import TextProcessor
+from database.transactions import (
     delete_sentences,
     insert_all_data,
     insert_text,
@@ -16,8 +16,8 @@ from src.database.transactions import (
     select_all_text_info,
     update_text_content
 )
-from src.schemas.text_schemas import TextContentUpdateSchema, TextSchema
-from src.schemas.sentence_schemas import SentenceSchema
+from schemas.text_schemas import TextContentUpdateSchema, TextSchema
+from schemas.sentence_schemas import SentenceSchema
 
 router = APIRouter()
 @router.get("/texts/text_titles", tags=['Texts'])

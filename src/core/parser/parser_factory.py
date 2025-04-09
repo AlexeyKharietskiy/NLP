@@ -1,10 +1,10 @@
 
 import os
 
-from src.core.parser.parser import Parser
-from src.core.parser.docx_parser import DocxParser
-from src.core.parser.pdf_parser import PdfParser
-from src.core.parser.txt_parser import TxtParser
+from core.parser.parser import Parser
+from core.parser.docx_parser import DocxParser
+from core.parser.pdf_parser import PdfParser
+from core.parser.txt_parser import TxtParser
 
 
 class ParserFactory:

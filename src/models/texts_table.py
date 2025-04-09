@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from src.models.column_types import create_at, updated_at, intpk
-from src.database.database import Base
+from models.column_types import create_at, updated_at, intpk
+from database.database import Base
 
 
 class TextModel(Base):

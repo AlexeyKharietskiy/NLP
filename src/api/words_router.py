@@ -1,9 +1,9 @@
 from fastapi import APIRouter
 
-from src.schemas.sentence_schemas import SentenceSchema
-from src.core.processor.natasha_processor import TextProcessor
-from src.schemas.word_schemas import WordSchema
-from src.database.transactions import (
+from schemas.sentence_schemas import SentenceSchema
+from core.processor.natasha_processor import TextProcessor
+from schemas.word_schemas import WordSchema
+from database.transactions import (
     insert_words,
     select_words,
      select_words_by_rel,

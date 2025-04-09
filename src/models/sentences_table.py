@@ -1,7 +1,7 @@
-from src.database.database import Base
+from database.database import Base
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from src.models.column_types import intpk
+from models.column_types import intpk
 
 class SentenceModel(Base):
     __tablename__ = 'sentences'

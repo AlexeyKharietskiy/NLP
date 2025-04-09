@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from src.database.transactions import select_sentences
+from database.transactions import select_sentences
 
 router = APIRouter()
 

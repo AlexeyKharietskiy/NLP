@@ -1,7 +1,7 @@
 from fastapi import APIRouter
-from src.api.texts_router import router as text_router
-from src.api.words_router import router as word_router
-from src.api.sentences_router import router as sentence_router
+from api.texts_router import router as text_router
+from api.words_router import router as word_router
+from api.sentences_router import router as sentence_router
 
 
 main_router = APIRouter()

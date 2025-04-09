@@ -1,5 +1,5 @@
 from docx import Document
-from src.core.parser.parser import Parser
+from core.parser.parser import Parser
 
 
 class DocxParser(Parser):
