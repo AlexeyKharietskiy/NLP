@@ -11,21 +11,6 @@ from database.transactions import (
 )
 router = APIRouter()
 
-@router.post('/words/add_words/{sentence_id}', tags=['Words'])
-def add_words(sentence_id: int, sentence: SentenceSchema):
-    processor = TextProcessor()
-    words = processor.get_words(sentence.sentence)['words']
-    word_schemas = [
-        WordSchema(
-            word=word['word'],
-            head_word=word['head'],
-            relation=word['rel'],
-        )
-        for word in words
-    ]
-    insert_words(sentence_id=sentence_id, words=word_schemas)
-    return {'message': 'Sentence was successfully processed'}
-
 @router.get('/words/{sentence_id}', tags=['Words'])
 def get_words(sentence_id: int):
     words = select_words(sent_id=sentence_id)

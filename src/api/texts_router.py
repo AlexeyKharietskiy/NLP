@@ -28,7 +28,7 @@ def get_texts_titles():
         raise HTTPException(status_code=404, detail=f'Do not find text titles')
     return {'data': text_titles}
 
-@router.get('/texts/concrete_text', tags=['Texts'])
+@router.get('/texts/concrete_text/{text_id}', tags=['Texts'])
 def get_text(text_id: int):
     '''Получение текста по id'''
     text = select_text(text_id)

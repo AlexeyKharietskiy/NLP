@@ -14,3 +14,5 @@ setuptools
 pymorphy2
 python-docx
 pymupdf
+
+requests
