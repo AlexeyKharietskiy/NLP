@@ -41,11 +41,9 @@ class CorpusManagerView(tk.Toplevel):
         self.config(menu=menubar)
 
     def create_right_panel(self):
-        """Правая панель с информацией о файле"""
         self.right_panel = tk.Frame(self.main_panel, bg="#f0f0f0", padx=5, pady=5)
         self.main_panel.add(self.right_panel)
 
-        # Создаем рамку с рельефом и заголовком
         info_frame = tk.LabelFrame(
             self.right_panel,
             text=" Текст ",
@@ -152,7 +150,6 @@ class CorpusManagerView(tk.Toplevel):
         self.create_words_table()
 
     def create_words_table(self):
-        """Создаем таблицу для отображения статистики слов"""
         columns = ("word", "count", "lemma", "pos", "morph")
         table_container = tk.Frame(self.right_panel)
         table_container.pack(fill=tk.BOTH, expand=True, pady=(0, 5))
@@ -225,7 +222,6 @@ class CorpusManagerView(tk.Toplevel):
         self.update_words_table(response.json()['data'])
 
     def search_by_substr(self):
-        """Поиск по подстроке"""
         search_term = str(self.search_entry.get())
         if not search_term:
             return
@@ -245,7 +241,6 @@ class CorpusManagerView(tk.Toplevel):
             if search_term in content:
                 self.text_info.tag_remove("highlight", 1.0, tk.END)
 
-                # подсветка вхождений
                 start = "1.0"
                 while True:
                     start = self.text_info.search(search_term, start, stopindex=tk.END)
@@ -273,14 +268,6 @@ class CorpusManagerView(tk.Toplevel):
         search_term = self.search_entry.get()
         if not search_term:
             return
-        all_items = self.word_table.get_children()
-
-        # word_values = [self.word_table.item(item, "values")[0] for item in all_items
-        #                if self.word_table.item(item, "values")[0] == search_term]
-        # print(word_values)
-        # if not word_values:
-        #     messagebox.showinfo("Поиск", f"Конкорданс для слова {search_term} не найден. Пожалуйста, "
-        #                                  f"попробуйте ввести целое слово")
         try:
             response_concordance = requests.get(
             f"http://127.0.0.1:8000/concordances/{search_term}"
@@ -317,14 +304,12 @@ class CorpusManagerView(tk.Toplevel):
                 self.word_table.insert("", tk.END, values=values)
 
     def start_editing(self, event=None):
-        """Активация редактирования по клику"""
         if self.text_info.cget('state') == tk.DISABLED:
             self.text_info.config(state=tk.NORMAL)
             self.save_button.config(state=tk.NORMAL)
             self.text_info.focus_set()
 
     def update_text(self):
-        """Сохранение изменений в файл"""
         try:
             content = self.text_info.get(1.0, tk.END)
             url = 'http://127.0.0.1:8000/texts/update_concrete_text/'

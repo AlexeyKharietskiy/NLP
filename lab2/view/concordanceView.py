@@ -20,8 +20,6 @@ class ConcordanceView(tk.Toplevel):
 
         self.text = ScrolledText(main_frame, wrap=tk.WORD, font=('Courier', 10))
         self.text.pack(expand=True, fill=tk.BOTH)
-
-        # Настройка подсветки
         self.text.tag_config("highlight", background="LightSeaGreen")
 
         for row in self.words_data:

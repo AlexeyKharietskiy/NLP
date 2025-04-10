@@ -26,5 +26,5 @@ def get_text_words_by_content(text_id: int, word: str):
     try:
         words = select_words_by_content(text_id=text_id, content=word.lower())
     except ValueError:
-        raise HTTPException(status_code=404, detail=f"No words found containing '{word}' in text with id: {word}")
+        raise HTTPException(status_code=404, detail=f"No words found containing '{word}' in text with id: {text_id}")
     return {'data': words}
