@@ -11,3 +11,6 @@ class TextGetSchema(BaseModel):
     id: int
     content: str
     title: str
+    
+class FilePathSchema(BaseModel):
+    file_path: str

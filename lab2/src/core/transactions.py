@@ -1,6 +1,6 @@
 from typing import Optional
 from sqlalchemy import and_, delete, func, select
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import selectinload
 from database import sync_session_factory, sync_engine, Base
 from models.texts import TextModel
 from models.words import WordModel
@@ -115,3 +115,14 @@ def update_text_values(text_id: int, new_content:Optional[str], new_title:Option
                  .filter(WordModel.text_id==text_id))
         session.execute(query)
         session.commit()
+        
+def select_all_data() -> list[TextModel]:
+    with sync_session_factory() as session:
+        query = (
+            select(TextModel).
+            options(
+                selectinload(TextModel.words)
+            )
+        )
+        res = session.scalars(query).unique().all()
+        return res

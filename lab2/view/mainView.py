@@ -34,6 +34,7 @@ class CorpusManagerView(tk.Toplevel):
 
         file_menu = tk.Menu(menubar, tearoff=0)
         file_menu.add_command(label="Добавить файл", command=self.add_file)
+        file_menu.add_command(label="Сохранить корпус", command=self.save_corpus)
         file_menu.add_separator()
         file_menu.add_command(label="Выход", command=self.quit)
 
@@ -45,7 +46,6 @@ class CorpusManagerView(tk.Toplevel):
         self.right_panel = tk.Frame(self.main_panel, bg="#f0f0f0", padx=5, pady=5)
         self.main_panel.add(self.right_panel)
 
-        # Создаем рамку с рельефом и заголовком
         info_frame = tk.LabelFrame(
             self.right_panel,
             text=" Текст ",
@@ -245,7 +245,6 @@ class CorpusManagerView(tk.Toplevel):
             if search_term in content:
                 self.text_info.tag_remove("highlight", 1.0, tk.END)
 
-                # подсветка вхождений
                 start = "1.0"
                 while True:
                     start = self.text_info.search(search_term, start, stopindex=tk.END)
@@ -268,19 +267,12 @@ class CorpusManagerView(tk.Toplevel):
         except Exception as e:
             print(f"Произошла ошибка: {e}")
 
-
     def concordance_search(self):
         search_term = self.search_entry.get()
         if not search_term:
             return
         all_items = self.word_table.get_children()
 
-        # word_values = [self.word_table.item(item, "values")[0] for item in all_items
-        #                if self.word_table.item(item, "values")[0] == search_term]
-        # print(word_values)
-        # if not word_values:
-        #     messagebox.showinfo("Поиск", f"Конкорданс для слова {search_term} не найден. Пожалуйста, "
-        #                                  f"попробуйте ввести целое слово")
         try:
             response_concordance = requests.get(
             f"http://127.0.0.1:8000/concordances/{search_term}"
@@ -301,7 +293,6 @@ class CorpusManagerView(tk.Toplevel):
                 print(f"HTTP ошибка: {e}")
         except Exception as e:
             print(f"Произошла ошибка: {e}")
-
 
     def update_words_table(self, searched_words):
         self.word_table.delete(*self.word_table.get_children())
@@ -346,10 +337,8 @@ class CorpusManagerView(tk.Toplevel):
         )
 
         if file_path:
-            print(file_path)
             full_filename = os.path.basename(file_path)
             filename_without_extension = os.path.splitext(full_filename)[0]
-            print(filename_without_extension)
 
             url = f'http://127.0.0.1:8000/texts/upload_file/{filename_without_extension}'
             params = {
@@ -358,6 +347,17 @@ class CorpusManagerView(tk.Toplevel):
             }
             response = requests.post(url, params=params)
             self.add_titles()
+            
+    def save_corpus(self):
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".json",
+            filetypes=[("JSON", "*.json")]
+        )
+        if file_path:
+            url = "http://127.0.0.1:8000/save_corpus"
+            params = {'file_path': file_path}
+            resp = requests.post(url=url, json=params)
+            print(str(resp.json()))
 
     def on_text_select(self, event):
         

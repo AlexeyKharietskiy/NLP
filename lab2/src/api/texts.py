@@ -1,5 +1,6 @@
+import json
 from typing import Optional
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Body, HTTPException
 import os
 
 from core.text.text_converter_factory import ParserFactory
@@ -8,12 +9,13 @@ from core.transactions import (
     insert_text, 
     insert_words, 
     create_tables,
+    select_all_data,
     select_texts,
     select_text_by_id,
     delete_text_by_id,
     update_text_values
 )
-from schemas.texts import TextSchema
+from schemas.texts import FilePathSchema, TextSchema
 router = APIRouter()
 @router.post("/texts/upload_file/{title}", tags=['Texts'])
 def load_file(file_path: str, title: str):
@@ -65,3 +67,37 @@ def update_text(req: TextSchema):
     except ValueError:
         HTTPException(status_code=404, detail=f'Do not find text with such ID: {req.id}')
     return {'message': f'Successfully update text with id: {req.id}'}
+
+@router.post('/save_corpus', tags=['Corpus'])
+def save_corpus(path: FilePathSchema):
+    if not path.file_path:
+        return {"message": "No file path provided"}
+    corpus_texts = select_all_data()
+    res = {
+        'corpus': []
+    }
+    for text in corpus_texts:
+        res['corpus'].append(
+            {
+                'title': text.title,
+                'content': text.content,
+                'created_at': text.create_at.isoformat(),
+                'updated_at': text.updated_at.isoformat(),
+                'words': [
+                    {
+                        'word': word.word,
+                        'frequency': word.frequency,
+                        'lemma': word.lemma,
+                        'part_of_speech': word.part_of_speech,
+                        'feats': word.feats,
+                    }
+                    for word in text.words
+                ]
+            }
+        )
+    try:
+        with open(path.file_path, 'w', encoding='utf-8') as file:
+            json.dump(res, file, ensure_ascii=False, indent=4)
+        return {'message': f'File was saved to {path.file_path}!'}
+    except Exception as e:
+        return {'error': str(e)}

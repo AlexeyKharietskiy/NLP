@@ -2,7 +2,6 @@ from pydantic import BaseModel
 
 
 class WordSchema(BaseModel):
-    # text_id: int
     lemma: str
     word: str
     part_of_speech: str

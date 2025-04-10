@@ -21,7 +21,6 @@ class ConcordanceView(tk.Toplevel):
         self.text = ScrolledText(main_frame, wrap=tk.WORD, font=('Courier', 10))
         self.text.pack(expand=True, fill=tk.BOTH)
 
-        # Настройка подсветки
         self.text.tag_config("highlight", background="LightSeaGreen")
 
         for row in self.words_data:
@@ -30,7 +29,7 @@ class ConcordanceView(tk.Toplevel):
             start = len(left_context) + 4
             end = start + len(row.get('word', ''))
             line_num = int(self.text.index(tk.END).split('.')[0])-1
-            line = '...' + left_context + ' ' + row.get('word', '') + ' ' + right_context + '...\n'+'\n'
+            line = '...' + left_context + ' ' + row.get('word', '') + ' ' + right_context + f'... [Text: {row['text_title']}]\n'+'\n'
             self.text.insert(tk.END, line)
             self.text.tag_add("highlight",
                               f"{line_num}.{start}",
