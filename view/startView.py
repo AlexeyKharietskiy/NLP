@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from infoView import InfoView
-from mainView import TextAnalyserView
+from mainView import TextAnalyzerView
 
 
 class StartView(tk.Tk):
@@ -33,7 +33,7 @@ class StartView(tk.Tk):
         info_view = InfoView(self)
 
     def open_main_view(self):
-       main_view = TextAnalyserView(self)
+       main_view = TextAnalyzerView(self)
 
     def main(self):
         self.create_widgets()

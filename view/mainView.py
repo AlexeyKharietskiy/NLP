@@ -82,28 +82,48 @@ class TextAnalyzerView(tk.Toplevel):
         self.create_sentences_table()
 
     def create_sentences_table(self):
-        """Создаем таблицу для отображения статистики слов"""
-        columns = ("sentences",)
+        """Создаем список для отображения предложений с прокруткой"""
+        # Основной контейнер
         table_container = tk.Frame(self.right_panel)
         table_container.pack(fill=tk.BOTH, expand=True, pady=(2, 5))
 
-        self.sentence_table = ttk.Treeview(
+        # Создаем Listbox с прокрутками
+        self.sentence_listbox = tk.Listbox(
             table_container,
-            columns=columns,
-            show="headings",
             height=17,
-            selectmode="browse"
+            selectmode=tk.SINGLE,  # Режим выбора одного элемента
+            font=('Arial', 10),
+            relief=tk.FLAT,
+            activestyle='none'  # Убираем подчеркивание при выборе
         )
 
-        self.sentence_table.heading("sentences", text="Предложения")
+        # Вертикальный скроллбар
+        v_scroll = ttk.Scrollbar(
+            table_container,
+            orient="vertical",
+            command=self.sentence_listbox.yview
+        )
+        self.sentence_listbox.configure(yscrollcommand=v_scroll.set)
 
-        self.sentence_table.column("sentences", width=630, anchor=tk.W)
+        # Горизонтальный скроллбар
+        h_scroll = ttk.Scrollbar(
+            table_container,
+            orient="horizontal",
+            command=self.sentence_listbox.xview
+        )
+        self.sentence_listbox.configure(xscrollcommand=h_scroll.set)
 
-        scrollbar = ttk.Scrollbar(table_container, orient="vertical", command=self.sentence_table.yview)
-        self.sentence_table.configure(yscrollcommand=scrollbar.set)
+        # Размещаем элементы через grid
+        self.sentence_listbox.grid(row=0, column=0, sticky="nsew")
+        v_scroll.grid(row=0, column=1, sticky="ns")
+        h_scroll.grid(row=1, column=0, sticky="ew")
 
-        self.sentence_table.pack(side="left", fill="both", expand=True, padx=(5, 2))
-        scrollbar.pack(side="right", fill="y", padx=5)
+        # Настройка растягивания
+        table_container.grid_rowconfigure(0, weight=1)
+        table_container.grid_columnconfigure(0, weight=1)
+
+        # Привязка событий (пример)
+        self.sentence_listbox.bind('<<ListboxSelect>>', self.on_sentence_click)
 
     def create_texts_table(self):
         table_frame = tk.Frame(self.main_panel)
@@ -145,7 +165,6 @@ class TextAnalyzerView(tk.Toplevel):
     def update_text(self):
         try:
             content = self.text_info.get(1.0, tk.END)
-            parsing_view = ParsingView(self, 'hello')
             url = f'http://127.0.0.1:8000//texts/new_content/{self.current_text_id}'
             params = {
                 "new_content": content,
@@ -203,13 +222,29 @@ class TextAnalyzerView(tk.Toplevel):
         self.update_sentence_table(sentences['data'])
 
     def update_sentence_table(self, searched_sentences):
-        self.sentence_table.delete(*self.sentence_table.get_children())
+        """Обновляем список предложений"""
+        self.sentence_listbox.delete(0, tk.END)  # Очищаем список
+
         if searched_sentences:
+            # Сохраняем данные для доступа по индексу
+            self.sentences_data = searched_sentences
+
+            # Заполняем Listbox
             for sent in searched_sentences:
-                values=(
-                    sent['sentence']
-                )
-                self.sentence_table.insert("", tk.END, values=values, iid=sent['id'])
+                self.sentence_listbox.insert(tk.END, sent['sentence'])
+
+    def on_sentence_click(self, event):
+        """Обработчик выбора предложения"""
+        if not self.sentence_listbox.curselection():
+            return  # Ничего не выбрано
+
+        index = self.sentence_listbox.curselection()[0]
+        selected_sentence = self.sentences_data[index]
+
+        # Создаем окно парсинга с полными данными
+        parsing_view = ParsingView(self, selected_sentence['id'])
+
+
 if __name__ == "__main__":
     root = tk.Tk()
     app = TextAnalyzerView(root)

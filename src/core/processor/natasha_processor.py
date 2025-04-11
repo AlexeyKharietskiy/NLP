@@ -91,11 +91,11 @@ class TextProcessor:
         # Правильный перебор токенов
         for token in doc.tokens:  # Используем doc.tokens вместо sent
             if hasattr(token, 'pos') and token.pos in {
-                "NOUN", "VERB", "ADJ", "NUMR",
+                "NOUN", "VERB", "ADJ", "NUMR",'NUM',
                 "ADV", "PRON", "PROPN", "PART", 
                 "CCONJ", "SCONJ", "ADP", "DET",
                 "INFN", 'PRTF', 'PRTS', 'PRED',
-                'INTJ'
+                'INTJ', 'AUX'
             }:
                 # Находим головное слово
                 head_word = next(
