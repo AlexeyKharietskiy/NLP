@@ -4,100 +4,75 @@ from natasha import Segmenter, MorphVocab, NewsEmbedding, NewsSyntaxParser, Doc,
 from schemas.word_schemas import WordSchema
 
 ud_relations_ru = {
-    'acl': 'относительное предложение',
-    'acl:relcl': 'относительное предложение (специфическое)',
-    'advcl': 'обстоятельственное придаточное',
-    'advmod': 'обстоятельство',
-    'amod': 'согласованное определение',
-    'appos': 'приложение',
-    'aux': 'вспомогательный глагол',
-    'aux:pass': 'вспомогательный глагол (пассив)',
-    'case': 'предлог/послелог',
-    'cc': 'сочинительный союз',
-    'ccomp': 'дополнительное придаточное',
-    'clf': 'классификатор',
-    'compound': 'составная часть',
-    'conj': 'сочинительная связь',
-    'cop': 'связка',
-    'csubj': 'предикативное придаточное',
-    'csubj:pass': 'предикативное придаточное (пассив)',
-    'dep': 'неопределенная зависимость',
-    'det': 'определитель',
-    'discourse': 'дискурсивный элемент',
-    'dislocated': 'дислоцированный элемент',
-    'expl': 'эксплетив (формальный субъект)',
-    'fixed': 'фиксированное выражение',
-    'flat': 'плоская структура',
-    'flat:foreign': 'иностранное слово в составе',
-    'flat:name': 'имя собственное (составное)',
-    'goeswith': 'графическое объединение',
-    'iobj': 'косвенное дополнение',
-    'list': 'элемент списка',
-    'mark': 'подчинительный союз',
-    'nmod': 'несогласованное определение',
+    # Основные синтаксические роли
     'nsubj': 'подлежащее',
-    'nsubj:outer': 'внешнее подлежащее',
-    'nsubj:pass': 'подлежащее (пассив)',
-    'nummod': 'числительное как модификатор',
-    'nummod:entity': 'числительное-сущность',
-    'nummod:gov': 'числительное-главное слово',
     'obj': 'прямое дополнение',
-    'obl': 'косвенное дополнение',
-    'obl:agent': 'агентивное дополнение',
-    'obl:tmod': 'временное обстоятельство',
-    'orphan': 'сиротский элемент (в эллипсисе)',
-    'parataxis': 'паратаксис',
-    'punct': 'знак препинания',
-    'reparandum': 'элемент для исправления',
-    'root': 'корневой элемент (сказуемое)',
-    'vocative': 'вокатив',
-    'xcomp': 'предикативное дополнение',
+    'iobj': 'косвенное дополнение',
+    'obl': 'обстоятельство',
+    'vocative': 'обращение',
+    'root': 'сказуемое',
+
+    # Определения
+    'amod': 'прилагательное-определение',
+    'nmod': 'несогласованное определение',
+    'appos': 'пояснение (приложение)',
+    'nummod': 'числительное',
+    'nummod:gov': 'числительное',
     
-    # Специфические для русского языка
-    'nmod:agent': 'агентивное определение',
-    'nmod:gsubj': 'глагольное подлежащее',
-    'nmod:gobj': 'глагольное дополнение',
-    'nmod:poss': 'притяжательное определение',
+    # Глагольные конструкции
+    'aux': 'вспомогательный глагол',
+    'cop': 'связка (глагол-связка)',
+    'xcomp': 'предикативное дополнение',
+    'ccomp': 'дополнительное предложение',
+    'advcl': 'обстоятельственное предложение',
+    'csubj': 'придаточное-подлежащее',
+
+    # Сочинительные связи
+    'conj': 'однородный член',
+    'cc': 'сочинительный союз',
+
+    # Специальные конструкции
+    'acl': 'определительное предложение',
+    'acl:relcl': 'относительное предложение',
+    'parataxis': 'вводная конструкция',
+    'fixed': 'устойчивое выражение',
+    'flat': 'составное слово',
+    'flat:name': 'составное имя',
+
+    # Служебные слова
+    'case': 'предлог/послелог',
+    'mark': 'подчинительный союз',
+    'det': 'определитель (артикль/местоимение)',
+    'advmod': 'наречие',
+    'punct': 'знак препинания',
 }
 class TextProcessor:
     def __init__(self):
         self.segmenter = Segmenter()
-        self.morph_vocab = MorphVocab()
         self.embedding = NewsEmbedding()
         self.morph_tagger = NewsMorphTagger(NewsEmbedding())
         self.syntax_parser = NewsSyntaxParser(self.embedding)
         
-    def get_sentences(self, text):
+    def get_sentences(self, text) -> list[str]:
         doc = Doc(text)
         doc.segment(self.segmenter)
-        doc.tag_morph(self.morph_tagger)
 
-        # Формируем структуру данных
         result = []
 
-        for sentence in doc.sents:
-            sentence_text = sentence.text
-            result.append(sentence_text)
+        [result.append(sentence.text) for sentence in doc.sents]
         return result
 
     def get_words(self, sentence: str) -> list[WordSchema]:
         doc = Doc(sentence)
-        doc.segment(self.segmenter)  # Сегментация на предложения
-        doc.tag_morph(self.morph_tagger)  # Морфологический разбор
-        doc.parse_syntax(self.syntax_parser)  # Синтаксический разбор
+        doc.segment(self.segmenter)
+        doc.parse_syntax(self.syntax_parser)
         
         result = []
         
-        # Правильный перебор токенов
-        for token in doc.tokens:  # Используем doc.tokens вместо sent
-            if hasattr(token, 'pos') and token.pos in {
-                "NOUN", "VERB", "ADJ", "NUMR",'NUM',
-                "ADV", "PRON", "PROPN", "PART", 
-                "CCONJ", "SCONJ", "ADP", "DET",
-                "INFN", 'PRTF', 'PRTS', 'PRED',
-                'INTJ', 'AUX'
-            }:
-                # Находим головное слово
+        for token in doc.tokens:
+            if hasattr(token, 'rel') and token.rel not in (
+                'punct', 
+            ):
                 head_word = next(
                     (t.text for t in doc.tokens if t.id == token.head_id),
                     ''
@@ -107,8 +82,9 @@ class TextProcessor:
                     WordSchema(
                         word=token.text,
                         head_word=head_word,
-                        relation=ud_relations_ru[token.rel]
+                        relation=ud_relations_ru.get(token.rel, ' ')
                     )
                 )
-        
         return result
+    
+processor = TextProcessor()

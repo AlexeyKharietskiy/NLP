@@ -9,3 +9,7 @@ class TextContentUpdateSchema(BaseModel):
     
 class FilePathSchema(BaseModel):
     file_path: str
+    
+class TextInsertSchema(BaseModel):
+    file_path: str
+    title: str
