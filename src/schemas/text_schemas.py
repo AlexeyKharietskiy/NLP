@@ -6,3 +6,6 @@ class TextSchema(BaseModel):
     
 class TextContentUpdateSchema(BaseModel):
     new_content: str
+    
+class FilePathSchema(BaseModel):
+    file_path: str

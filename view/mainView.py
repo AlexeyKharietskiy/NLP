@@ -71,11 +71,17 @@ class TextAnalyzerView(tk.Toplevel):
 
         self.save_button = tk.Button(
             info_frame,
-            text="Сохранить",
+            text="Обновить",
             command=self.update_text,
             state=tk.DISABLED
         )
-        self.save_button.pack(pady=5, anchor='e')
+        self.save_button.pack(side=tk.RIGHT)
+        convert_info_button = tk.Button(
+            info_frame,
+            text="Сохранить",
+            command=self.save_text,
+        )
+        convert_info_button.pack(side=tk.LEFT, padx=(0, 5)) 
 
 
 
@@ -243,7 +249,17 @@ class TextAnalyzerView(tk.Toplevel):
 
         # Создаем окно парсинга с полными данными
         parsing_view = ParsingView(self, selected_sentence['id'])
-
+    
+    def save_text(self):
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".json",
+            filetypes=[("JSON", "*.json")]
+        )
+        if file_path:
+            url = f"http://127.0.0.1:8000/texts/save/{self.current_text_id}"
+            params = {'file_path': file_path}
+            resp = requests.post(url=url, json=params)
+            print(str(resp.json()))
 
 if __name__ == "__main__":
     root = tk.Tk()

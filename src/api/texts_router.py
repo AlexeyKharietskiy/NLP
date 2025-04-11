@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 from fastapi import APIRouter, HTTPException
 import os
@@ -7,16 +8,14 @@ from core.processor.natasha_processor import TextProcessor
 from database.transactions import (
     delete_sentences,
     insert_all_data,
-    insert_text,
     insert_sentences,
     create_tables,
-    insert_words,
     select_text_titles,
     select_text,
     select_all_text_info,
     update_text_content
 )
-from schemas.text_schemas import TextContentUpdateSchema, TextSchema
+from schemas.text_schemas import FilePathSchema, TextContentUpdateSchema, TextSchema
 from schemas.sentence_schemas import SentenceSchema
 
 router = APIRouter()
@@ -36,12 +35,47 @@ def get_text(text_id: int):
         raise HTTPException(status_code=404, detail=f'Do not find text with such ID: {text_id}')
     return {'data': text}
 
-@router.get('/texts/text_info/{text_id}', tags=['Texts'])
-def get_text_info(text_id: int):
-    text_info = select_all_text_info(text_id)
-    if not text_info:
+@router.post('/texts/save/{text_id}', tags=['Texts'])
+def save_text_info(text_id: int, path: FilePathSchema):
+    if not path.file_path:
+        return {"message": "No file path provided"}
+    text = select_all_text_info(text_id)
+    
+    if not text:
         raise HTTPException(status_code=404, detail=f'Do not find info of the text with such ID: {text_id}')
-    return {'data': text_info}
+    res = {
+        'text': []
+    }
+    res['text'].append(
+        {
+            'title': text.title,
+            'content': text.content,
+            'created_at': text.create_at.isoformat(),
+            'updated_at': text.updated_at.isoformat(),
+            'sentences': [
+                {
+                    'sentence': sentence.sentence,
+                    'words': [
+                        {
+                            'word': word.word,
+                            'head': word.head,
+                            'relation': word.relation
+                        }
+                        for word in sentence.words
+                    ]
+                }
+                for sentence in text.sentences
+            ]
+        }
+    )
+    try:
+        with open(path.file_path, 'w', encoding='utf-8') as file:
+            json.dump(res, file, ensure_ascii=False, indent=4)
+        return {'message': f'File was saved to {path.file_path}!'}
+    except Exception as e:
+        return {'error': str(e)}
+    
+    return {'data': text}
 
 @router.post("/texts/upload_file/{title}", tags=['Texts'])
 def load_file(file_path: str, title: str):
@@ -81,7 +115,3 @@ def update_content(text_id: int, new_content: TextContentUpdateSchema):
     ]
     insert_sentences(text_id=text_id, syntax_constructs=syntax_constructs)
     return {'message': f'Successfully update text with id {text_id}'}
-
-
-
-

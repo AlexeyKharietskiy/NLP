@@ -46,7 +46,7 @@ def select_words(sent_id: int):
         words = res.scalars().all()
         return words
     
-def select_all_text_info(id: int):
+def select_all_text_info(id: int) -> TextModel:
     with session_factory() as session:
         query = (
             select(TextModel)
@@ -96,14 +96,6 @@ def insert_all_data(text: TextSchema, syntax_constructs: list[dict]):
                 session.flush()
         session.commit()
         
-def insert_text(text: TextSchema):
-    with session_factory() as session:
-        text_model = TextModel(title=text.title, content=text.content)
-        session.add(text_model)
-        session.flush()
-        session.commit()
-        return text_model.id
-        
 def insert_sentences(syntax_constructs: list[dict], text_id: str):
     with session_factory() as session:
         for syntax_construct in syntax_constructs:
@@ -152,8 +144,7 @@ def select_words_by_substr(substr: str, sentence_id: int):
         
         res = session.scalars(query).unique().all()
         return res
-    
-    
+     
 def update_text_content(new_content: str, text_id: int):
     engine.echo = True
     with session_factory() as session:
