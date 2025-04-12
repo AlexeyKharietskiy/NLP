@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 import requests
+
+from logger import logger
 class ParsingView(tk.Toplevel):
     def __init__(self, root, sentence_id):
         super().__init__(root)
@@ -151,11 +153,12 @@ class ParsingView(tk.Toplevel):
         )
         if response.status_code == 404:
             error_data = response.json()
-            print(f"Ошибка: {error_data.get('detail')}")
+            logger.error(f"{error_data.get('detail')}")
+            self.words_table.delete(*self.words_table.get_children())
         else:
             self.update_words_table(response.json()['data'])
 
-    def search_by_substr(self, event):
+    def search_by_substr(self, event=None):
         """Fill in words by the substr"""
         search_term = self.search_entry.get()
         if not search_term:
@@ -167,9 +170,11 @@ class ParsingView(tk.Toplevel):
         response = requests.get(url, params=params)
         if response.status_code == 404:
             error_data = response.json()
-            print(f"Ошибка: {error_data.get('detail')}")
-        words = response.json()
-        self.update_words_table(words['data'])
+            logger.error(f"{error_data.get('detail')}")
+            self.words_table.delete(*self.words_table.get_children())
+        else:
+            words = response.json()
+            self.update_words_table(words['data'])
 
     def update_words_table(self, searched_words: list[dict]):
         """Update words in the table 
@@ -192,6 +197,11 @@ class ParsingView(tk.Toplevel):
         response = requests.get(
             f"http://127.0.0.1:8000/words/{self.sentence_id}"
         )
-        words = response.json()['data']
-        self.update_words_table(words)
+        if response.status_code == 404:
+            error_data = response.json()
+            logger.error(f"{error_data.get('detail')}")
+            self.words_table.delete(*self.words_table.get_children())
+        else:
+            words = response.json()['data']
+            self.update_words_table(words)
 
