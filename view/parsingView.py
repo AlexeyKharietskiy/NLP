@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 import requests
 
+from SyntaxTree import App
+
 from logger import logger
 class ParsingView(tk.Toplevel):
     def __init__(self, root, sentence_id):
@@ -27,6 +29,7 @@ class ParsingView(tk.Toplevel):
         self.create_search_entry(search_frame)
         self.create_search_button(search_frame)
         self.create_revert_button(search_frame)
+        self.create_tree_button(search_frame)
         self.create_table(main_frame)
     
     def create_search_entry(self, frame: ttk.Frame):
@@ -96,6 +99,15 @@ class ParsingView(tk.Toplevel):
                 self.members_combobox.set("")
             ],
             width=8
+        )
+        revert_btn.pack(side=tk.LEFT, padx=10)
+
+    def create_tree_button(self, frame: ttk.Frame):
+        revert_btn = tk.Button(
+            frame,
+            text="Показать дерево",
+            command=self.show_tree_view,
+            width=20
         )
         revert_btn.pack(side=tk.LEFT, padx=10)
         
@@ -204,4 +216,8 @@ class ParsingView(tk.Toplevel):
         else:
             words = response.json()['data']
             self.update_words_table(words)
+
+    def show_tree_view(self):
+        app = App(self.sentence_id)
+        app.run()
 
