@@ -4,7 +4,7 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from database.config import settings
 
 engine = create_engine(
-    url=settings.DATABASE_URL_psycopg,
+    url=settings.DATABASE_URL,
     echo=False,
 )
 

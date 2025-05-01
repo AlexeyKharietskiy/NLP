@@ -1,0 +1,24 @@
+from database.database import Base
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from models.column_types import intpk
+
+class SentenceModel(Base):
+    __tablename__ = 'sentences'
+    id: Mapped[intpk]
+    text_id: Mapped[int] = mapped_column(ForeignKey('texts.id', ondelete='CASCADE'))
+    sentence: Mapped[str]
+    
+    words: Mapped[list['WordModel']] = relationship(
+        back_populates='sentence',
+    )
+    
+    ners: Mapped[list['NERModel']] = relationship(
+        back_populates='sentence',
+    )
+
+    text: Mapped['TextModel'] = relationship(
+        back_populates='sentences'
+    )
+    
+    
