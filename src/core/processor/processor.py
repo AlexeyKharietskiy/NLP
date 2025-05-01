@@ -7,7 +7,7 @@ from natasha import (
     NewsMorphTagger,
     NewsNERTagger
     )
-
+from log import logger
 
 class TextProcessor:
     def __init__(self):
@@ -18,7 +18,7 @@ class TextProcessor:
         self.syntax_parser = NewsSyntaxParser(self.embedding)
         self.ner_tagger = NewsNERTagger(self.embedding)
         
-    def process(self, text: str) -> list[str]:
+    def process(self, text: str) -> dict:
         doc = Doc(text)
         doc.segment(self.segmenter)
 
@@ -34,6 +34,7 @@ class TextProcessor:
             current_sentence['words'] = words
             current_sentence['ners'] = ners
             result['sentences'].append(current_sentence)
+        logger.info('Text was processed')
         return result
 
     def get_words(self, sentence: str) -> list[dict]:
@@ -73,7 +74,7 @@ class TextProcessor:
 
         for span in doc.spans:
             result.append({
-                'text': span.text,
+                'ner': span.text,
                 'type': span.type,
             })
 

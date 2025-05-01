@@ -16,7 +16,6 @@ class NERModel(Base):
         )
     ner: Mapped[str]
     type: Mapped[str]
-    info: Mapped[str]
     
     sentence: Mapped['SentenceModel'] = relationship(
         back_populates='ners'
