@@ -1,0 +1,16 @@
+psycopg
+psycopg-binary
+sqlalchemy
+
+fastapi
+pydantic
+pydantic-settings
+uvicorn
+
+natasha
+setuptools
+pymorphy2
+python-docx
+pymupdf
+
+requests
