@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import requests
 
-from SyntaxTree import App
+from SyntaxTree import SyntaxTreeApp
 
 from logger import logger
 class ParsingView(tk.Toplevel):
@@ -40,51 +40,59 @@ class ParsingView(tk.Toplevel):
     def create_members_combobox(self, frame: ttk.Frame):
         tk.Label(frame, text="Член предложения:").pack(side=tk.LEFT, padx=(10, 5))
         poses = (
-            'сказуемое',
-            'подлежащее',
-            'прямое дополнение',
-            'косвенное дополнение',
-            'обстоятельство',
-            'обращение',
-
-            'прилагательное-определение',
-            'несогласованное определение',
-            'пояснение (приложение)',
-            'числительное',
-            
-            'вспомогательный глагол',
-            'связка (глагол-связка)',
-            'предикативное дополнение',
-            'дополнительное предложение',
-            'обстоятельственное предложение',
-            'придаточное-подлежащее',
-
-            'однородный член',
-            'сочинительный союз',
-
-            'определительное предложение',
-            'вводная конструкция',
-            'устойчивое выражение',
-            'составное слово',
-            'составное имя',
-
-            'предлог/послелог',
-            'подчинительный союз',
-            'определитель (артикль/местоимение)',
-            'наречие',
-            'знак препинания',
-
-            'неясная связь',
-            'нестандартная связь',
-            'вводное слово',
-            'формальное подлежащее'
+           ' acl',
+           'acl:relcl',
+           'advcl',
+           'advmod',
+           'amod',
+           'appos',
+           'aux',
+           'aux:pass' ,
+           'case',
+           'cc',
+           'ccomp' ,
+           'compound' ,
+           'conj',
+           'cop' ,
+           'csubj' ,
+           'csubj:pass' ,
+           'dep' ,
+           'det' ,
+           'discourse' ,
+           'dislocated' ,
+           'expl' ,
+           'fixed' ,
+           'flat' ,
+           'flat:foreign' ,
+           'flat:name' ,
+           'iobj' ,
+           'list' ,
+           'mark' ,
+           'nmod' ,
+           'nsubj' ,
+           'nsubj:outer' ,
+           'nsubj:pass' ,
+           'nummod' ,
+           'nummod:entity' ,
+           'nummod:gov',
+           'obj' ,
+           'obl' ,
+           'obl:agent' ,
+           'obl:tmod',
+           'orphan',
+           'parataxis' ,
+           'punct' ,
+           'root' ,
+           'vocative',
+           'xcomp',
         )
 
         self.members_combobox = ttk.Combobox(
             frame,
             values=poses,
             state="readonly",
-            width=30
+            width=30,
+            height=50,
         )
         self.members_combobox.pack(side=tk.LEFT, padx=1)
         self.members_combobox.bind("<<ComboboxSelected>>", self.filter_by_criteria)
@@ -218,6 +226,5 @@ class ParsingView(tk.Toplevel):
             self.update_words_table(words)
 
     def show_tree_view(self):
-        app = App(self.sentence_id)
-        app.run()
+        app = SyntaxTreeApp(self, self.sentence_id)
 

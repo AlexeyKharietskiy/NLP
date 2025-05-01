@@ -3,9 +3,65 @@ from random import randint
 
 import requests
 
-class SyntaxTreeApp:
+from logger import logger
+
+relation_to_category = {
+    # Подлежащее
+    "nsubj": "подлежащее",
+    "nsubj:pass": "подлежащее",
+    "nsubj:outer": "подлежащее",
+    "csubj": "подлежащее",
+    "csubj:pass": "подлежащее",
+    # Сказуемое
+    "root": "сказуемое",
+    "aux": "сказуемое",
+    "aux:pass": "сказуемое",
+    "cop": "сказуемое",
+    # Дополнение
+    "obj": "дополнение",
+    "iobj": "дополнение",
+    "ccomp": "дополнение",
+    "xcomp": "дополнение",
+    # Определение
+    "amod": "определение",
+    "acl": "определение",
+    "acl:relcl": "определение",
+    "appos": "определение",
+    "det": "определение",
+    "nummod": "определение",
+    "nummod:entity": "определение",
+    "nummod:gov": "определение",
+    "nmod": "определение",
+    # Обстоятельство
+    "advmod": "обстоятельство",
+    "advcl": "обстоятельство",
+    "obl": "обстоятельство",
+    "obl:agent": "обстоятельство",
+    "obl:tmod": "обстоятельство",
+    "case": "обстоятельство",
+    # Другое
+    "cc": "другое",
+    "compound": "другое",
+    "conj": "другое",
+    "dep": "другое",
+    "discourse": "другое",
+    "dislocated": "другое",
+    "expl": "другое",
+    "fixed": "другое",
+    "flat": "другое",
+    "flat:foreign": "другое",
+    "flat:name": "другое",
+    "list": "другое",
+    "mark": "другое",
+    "orphan": "другое",
+    "parataxis": "другое",
+    "punct": "другое",
+    "vocative": "другое",
+}
+class SyntaxTreeApp(tk.Toplevel):
     def __init__(self, root, sentence_id):
-        self.root = root
+        super().__init__(root)
+        self.title('Синтаксическое дерево')
         self.sentence_id = sentence_id
         self.tokens = None
 
@@ -13,8 +69,8 @@ class SyntaxTreeApp:
         self.fetch_data()
 
         # Создаем Canvas
-        self.canvas = tk.Canvas(self.root, width=1200, height=500, bg="white", scrollregion=(0, 0, 2000, 600))
-        hbar = tk.Scrollbar(self.root, orient=tk.HORIZONTAL)
+        self.canvas = tk.Canvas(self, width=1200, height=500, bg="white", scrollregion=(0, 0, 2000, 600))
+        hbar = tk.Scrollbar(self, orient=tk.HORIZONTAL)
         hbar.pack(side=tk.BOTTOM, fill=tk.X)
         hbar.config(command=self.canvas.xview)
         self.canvas.config(xscrollcommand=hbar.set)
@@ -38,9 +94,9 @@ class SyntaxTreeApp:
             response = requests.get(url)
             response.raise_for_status()  # Проверяем, успешен ли запрос
             self.tokens = response.json()['data']
-            print("Полученные данные с сервера:", self.tokens)
+            logger.info(f"Полученные данные с сервера: {self.tokens}")
         except requests.exceptions.RequestException as e:
-            print(f"Ошибка при запросе данных: {e}")
+            logger.error(f"Ошибка при запросе данных: {e}")
             self.tokens = []
 
     def calculate_positions(self):
@@ -56,21 +112,21 @@ class SyntaxTreeApp:
         # Определяем уровни зависимостей (глубина от корня)
         root = None
         for token in self.tokens:
-            if  "сказуемое" in token["relation"]:
+            if relation_to_category[token["relation"]] == "сказуемое":
                 root = token
                 break
 
         if not root:
             for token in self.tokens:
-                if token["relation"] == "подлежащее":
+                if relation_to_category[token["relation"]] == "подлежащее":
                     root = token
-                    print("Найдено только подлежащее")
+                    logger.warning("Найдено только подлежащее")
                     break
         if not root:
-            print("Корень предложения не найден")
+            logger.warning("Корень предложения не найден")
             return
 
-        print(f"Корень предложения: {root['word']} (id: {root['id']})")
+        logger.info(f"Корень предложения: {root['word']} (id: {root['id']})")
 
         for token in self.tokens:
             current = token
@@ -86,12 +142,12 @@ class SyntaxTreeApp:
                         parent = t
                         break
                 if not parent:
-                    print(f"Родитель для слова '{current['word']}' (head: '{current['head']}') не найден")
+                    logger.info(f"Родитель для слова '{current['word']}' (head: '{current['head']}') не найден")
                     break
                 current = parent
                 level_count += 1
             self.levels[token["id"]] = level_count
-        print("Уровни зависимостей:", self.levels)
+        logger.info("Уровни зависимостей:", self.levels)
 
     def draw_tree(self):
         # Очищаем Canvas
@@ -115,22 +171,14 @@ class SyntaxTreeApp:
 
             # Рисуем подчеркивания
             y_underline = y + 15
-            if token["relation"] == "подлежащее":  # Подлежащее - сплошная линия
+            if relation_to_category[token["relation"]] == "подлежащее":  # Подлежащее - сплошная линия
                 self.canvas.create_line(x_start, y_underline, x_start + word_width, y_underline, fill="black")
 
-            elif "сказуемое" in token["relation"] or token["relation"] == 'дополнительное предложение'\
-                    or token["relation"] == 'обстоятельственное предложение'\
-                    or token["relation"] == 'относительное предложение'\
-                    or token["relation"] == 'определительное предложение'\
-                    or token["relation"] == "предикативное придаточное":  # Сказуемое - двойная линия
+            elif relation_to_category[token["relation"]] == 'сказуемое':  # Сказуемое - двойная линия
                 self.canvas.create_line(x_start, y_underline, x_start + word_width, y_underline, fill="black")
                 self.canvas.create_line(x_start, y_underline + 3, x_start + word_width, y_underline + 3, fill="black")
 
-            elif (token["relation"] == 'согласованное определение' or
-                  token["relation"] == 'несогласованное определение' or
-                  token["relation"] == 'притяжательное определение' or
-                  token["relation"] == 'агентивное определение' or
-                  token["relation"] == 'определитель'):
+            elif relation_to_category[token["relation"]] == 'определение':
                 points = []
                 for i in range(0, word_width + 1, 5):
                     x_point = x_start + i
@@ -138,18 +186,12 @@ class SyntaxTreeApp:
                     points.extend([x_point, y_point])
                 self.canvas.create_line(*points, fill="black", smooth=True)
 
-            elif (token["relation"] == 'прямое дополнение' or
-                  token["relation"] =='косвенное дополнение' or
-                  token["relation"] =='агентивное дополнение' or
-                  token["relation"] =='предикативное дополнение' or
-                  token["relation"] == 'глагольное дополнение'):  # Прямое дополнение - пунктирная линия
+            elif relation_to_category[token["relation"]] == 'дополнение':  # Прямое дополнение - пунктирная линия
                 dash_pattern = (4, 4)  # Пунктир
                 self.canvas.create_line(x_start, y_underline, x_start + word_width, y_underline, dash=dash_pattern,
                                         fill="black")
 
-            elif (token["relation"] == 'обстоятельственное придаточное'
-                or token["relation"] == "обстоятельство"
-                or token["relation"] == 'временное обстоятельство'):  # Предлог - точечная линия
+            elif relation_to_category[token["relation"]] == 'обстоятельство':  # Предлог - точечная линия
                 dash_pattern = (2, 4)  # Точечная линия
                 self.canvas.create_line(x_start, y_underline, x_start + word_width, y_underline, dash=(25, 5, 1, 10), fill="black")
 
@@ -165,9 +207,9 @@ class SyntaxTreeApp:
         # Создаем список зависимостей и сортируем их по X-координате дочернего слова
         dependencies = []
         for token in self.tokens:
-            if token["relation"] == "сказуемое":
+            if relation_to_category[token["relation"]] == "сказуемое":
                 continue
-            elif token['relation'] == "подлежащее":
+            elif relation_to_category[token["relation"]] == "подлежащее":
                 continue
             x_token, _ = self.word_positions[token["id"]]
             dependencies.append((token, x_token))
@@ -186,14 +228,14 @@ class SyntaxTreeApp:
                     parent = t
                     break
             if not parent:
-                print(f"Не найден родитель для слова '{token['word']}' (head: '{token['head']}')")
+                logger.info(f"Не найден родитель для слова '{token['word']}' (head: '{token['head']}')")
                 continue
 
             x_parent, y_parent = self.word_positions[parent["id"]]
 
             # Уровень зависимости
             if token["id"] not in self.levels:
-                print(f"Уровень зависимости для слова '{token['word']}' не рассчитан")
+                logger.info(f"Уровень зависимости для слова '{token['word']}' не рассчитан")
                 continue
             level = self.levels[token["id"]]
             y_level = y_base - level * level_height
@@ -251,7 +293,7 @@ class SyntaxTreeApp:
             adjusted_label_y = label_y + offset
 
             # лог координаты метки
-            print(f"Метка '{token['relation'].upper()}': x={label_x}, y={adjusted_label_y}, offset={offset}")
+            logger.info(f"Метка '{token['relation'].upper()}': x={label_x}, y={adjusted_label_y}, offset={offset}")
 
             label_text = token["relation"].upper()
             font_size = 7 if len(label_text) <= 15 else 5  # Уменьшаем шрифт для длинных меток
@@ -276,32 +318,3 @@ class SyntaxTreeApp:
                 fill="black"
             )
             self.canvas.delete(temp_label)
-
-
-
-class App:
-    def __init__(self, sentence_id):
-        self.sentence_id = sentence_id
-        self.root = tk.Tk()
-        self.root.title("Syntax Tree Visualizer")
-
-        # Инициализация приложения
-        self.draw()
-
-    def draw(self):
-        if not self.sentence_id:
-            return
-        # Удаляем предыдущее дерево, если оно есть
-        for widget in self.root.winfo_children():
-            if isinstance(widget, tk.Canvas):
-                widget.destroy()
-        # Создаем новое дерево
-        SyntaxTreeApp(self.root, self.sentence_id)
-
-    def run(self):
-        self.root.mainloop()
-
-
-if __name__ == "__main__":
-    app = App(135)
-    app.run()
