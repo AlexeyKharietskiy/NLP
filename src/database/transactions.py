@@ -44,6 +44,54 @@ def select_words(sent_id: int):
         res = session.execute(query)
         words = res.scalars().all()
         return words
+
+def select_syntax_words(sent_id: int):
+    with session_factory() as session:
+        query = select(
+            WordModel.id, 
+            WordModel.word,
+            WordModel.head,
+            WordModel.relation
+            ).filter(WordModel.sentence_id == sent_id)
+        res = session.execute(query)
+        return [
+            {
+                "id": row[0], 
+                "word": row[1],
+                "head": row[2],
+                "relation": row[3]
+                } 
+            for row in res
+            ]
+    
+def select_morphological_words(sent_id: int):
+    with session_factory() as session:
+        query = select(
+            WordModel.id, 
+            WordModel.word,
+            WordModel.pos,
+            WordModel.feats
+            ).filter(WordModel.sentence_id == sent_id)
+        res = session.execute(query)
+        return [
+            {
+                "id": row[0], 
+                "word": row[1],
+                "pos": row[2],
+                "feats": row[3]
+                } 
+            for row in res
+            ]
+
+def select_ners(sent_id: int):
+    with session_factory() as session:
+        query = (
+            select(NERModel).
+            filter(NERModel.sentence_id == sent_id)
+        )
+        res = session.execute(query)
+        words = res.scalars().all()
+        return words
     
 def select_all_text_info(id: int) -> TextModel:
     with session_factory() as session:
@@ -113,34 +161,44 @@ def insert_all_data(text_params: dict, sentences: list[dict]):
             session.add_all(ner_models)
         session.commit()
         
-def insert_sentences(syntax_constructs: list[dict], text_id: str):
+def insert_sentences(sentences: list[dict], text_id: str):
     with session_factory() as session:
-        for syntax_construct in syntax_constructs:
-            sent = SentenceModel(sentence=syntax_construct['sentence'], text_id=text_id)
+        for sentence in sentences:
+            sent = SentenceModel(sentence=sentence['sentence'], text_id=text_id)
             session.add(sent)
             session.flush()
-            word_models=[]
-            for words_schema in syntax_construct['words']:
+            word_models = []
+            ner_models = []
+            for word in sentence['words']:
                 word_models.append(
                     WordModel(
-                        word=words_schema.word,
-                        head=words_schema.head_word, 
-                        relation=words_schema.relation, 
+                        word=word['word'], 
                         sentence_id=sent.id,
+                        head=word['head_word'],
+                        relation=word['relation'],
+                        pos = word['pos'],
+                        feats = word['feats']
                     )) 
-                    
-                session.add_all(word_models)
-                session.flush()
+                
+            for ner in sentence['ners']:
+                ner_models.append(
+                    NERModel(
+                        ner=ner['ner'], 
+                        sentence_id=sent.id,
+                        type=ner['type'],
+                    ))  
+            session.add_all(word_models)
+            session.add_all(ner_models)        
         session.commit()
         
-def select_words_by_rel(rel: str, sentence_id: int):
+def select_words_by_pos(pos: str, sentence_id: int):
     with session_factory() as session:
         query = (
             select(WordModel)
             .where(
                 and_(
                     WordModel.sentence_id == sentence_id,
-                    WordModel.relation == rel
+                    WordModel.pos == pos
                     )
             )
         )

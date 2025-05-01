@@ -63,7 +63,7 @@ def get_text(text_id: int):
     return {'data': text}
 
 @router.post('/texts/save/{text_id}', tags=['Texts'])
-def get_all_text_info(text_id: int, filepath: Annotated[str, Body()]):
+def save_text(text_id: int, filepath: Annotated[str, Body()]):
     """Save processed text date into json file:
 
     Args:
@@ -116,7 +116,6 @@ def get_all_text_info(text_id: int, filepath: Annotated[str, Body()]):
 
 @router.post("/texts/upload_file", tags=['Texts'])
 def load_file(text_data: TextInsertSchema):
-    create_tables()
     """Process text from file and loaded it into database
 
     Args:
@@ -133,24 +132,24 @@ def load_file(text_data: TextInsertSchema):
         raise HTTPException(status_code=404, detail="File not found")
     parser = ParserFactory.get_parser(text_data.file_path)
     text = parser.parse(text_data.file_path)
-    # try:
-    text_params = {
-        'content': text, 
-        "title": text_data.title
-        }
-    processor = TextProcessor()        
-    result = processor.process(text)
-    syntax_constructs = [
-        {
-        'words': sent['words'], 
-        'ners': sent['ners'], 
-        'sentence': sent['sentence'],
-        } 
-        for sent in result['sentences']
-    ]
-    insert_all_data(text_params=text_params, sentences=syntax_constructs) 
-    # except Exception:
-    #     raise HTTPException(status_code=409, detail='A text with this title already exists')
+    try:
+        text_params = {
+            'content': text, 
+            "title": text_data.title
+            }
+        processor = TextProcessor()        
+        result = processor.process(text)
+        syntax_constructs = [
+            {
+            'words': sent['words'], 
+            'ners': sent['ners'], 
+            'sentence': sent['sentence'],
+            } 
+            for sent in result['sentences']
+        ]
+        insert_all_data(text_params=text_params, sentences=syntax_constructs) 
+    except Exception:
+        raise HTTPException(status_code=409, detail='A text with this title already exists')
     return {'message': 'File was loaded successfully'}
 
 @router.patch('/texts/new_content/{text_id}', tags=['Texts'])
@@ -170,15 +169,17 @@ def update_content(text_id: int, new_content: Annotated[str, Body()]):
     try:
         update_text_content(text_id=text_id, new_content=new_content)
         delete_sentences(text_id=text_id)
-        sentences = processor.get_sentences(new_content)
-        syntax_constructs = [
-            {
-            'words': processor.get_words(sent), 
-            'sentence': sent,
-            } 
-            for sent in sentences
-        ]
-        insert_sentences(text_id=text_id, syntax_constructs=syntax_constructs)
+        processor = TextProcessor()
+        result = processor.process(new_content)
+        sentences = [
+        {
+        'words': sent['words'], 
+        'ners': sent['ners'], 
+        'sentence': sent['sentence'],
+        } 
+        for sent in result['sentences']
+    ]
+        insert_sentences(text_id=text_id, sentences=sentences)
     except AttributeError:
         raise HTTPException(status_code=404, detail=f'Do not find text with id {text_id}')
     return {'message': f'Successfully update text with id {text_id}'}
