@@ -9,8 +9,10 @@ from database.transactions import (
     save_message,
     clear_message_table,
     get_dialog,
-    get_from_dishes)
+    get_from_dishes,
+    get_names_through_time)
 from dotenv import load_dotenv
+from parser.DateParser import DateParser
 
 load_dotenv()
 
@@ -76,7 +78,8 @@ async def handle_message(message: types.Message):
     logging.info(wit_response)
     intent = wit_response.get('intents', [{}])[0].get('name', 'unknown')
     entities = wit_response.get('entities', {})
-    if entities != {}:
+    traits = wit_response.get('traits', {})
+    if entities != {} and intent != 'name':
         column, value = list(entities.keys())[0].split(':')
         if column and value:
             records = await get_from_dishes(intent, column, value)
@@ -95,8 +98,8 @@ async def handle_message(message: types.Message):
             elif intent == 'cooking_time':
                 ru_name = await get_ru_name(column, value)
                 response = await get_cooking_time(records, ru_name)
-            elif intent == 'name':
-                print(records)
+    elif intent == 'name':
+        response = await get_names(traits, intent, entities)
 
 
     elif intent == 'start_dialog':
@@ -142,6 +145,34 @@ async def get_ru_name(column, value):
     value_ru_name = await get_from_dishes('name', column, value)
     ru_name = value_ru_name[0]['name']
     return ru_name
+
+async def get_names(traits, intent, entities):
+    names = ''
+    column, value = list(entities.keys())[0].split(':')
+    if value == 'duration':
+        unit = entities.get(list(entities.keys())[0])[0].get('unit')
+        time_value = entities.get(list(entities.keys())[0])[0].get('value')
+        search_value = DateParser.parse(unit, time_value)
+        if traits:
+            if list(traits.keys())[0] == 'less':
+                try:
+                    names = await get_names_through_time(search_value, '<')
+                except Exception as e:
+                    logging.error(f"Ошибка запроса: {e}")
+                    raise
+    else:
+        try:
+            names = await get_from_dishes(intent, column, value)
+        except Exception as e:
+            logging.error(f"Ошибка запроса: {e}")
+            raise
+    if names:
+        names_str = ''.join(str(name['name']) + ', ' for name in names)
+        names_str = names_str.strip(', ')
+        response = f"Вот известные мне блюда: {names_str}."
+    else:
+        response = "Хм, такие блюда мне не известны"
+    return response
 
 
 if __name__ == '__main__':

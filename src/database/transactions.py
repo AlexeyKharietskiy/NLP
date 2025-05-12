@@ -2,6 +2,7 @@ import asyncpg
 from dotenv import load_dotenv
 import os
 from database.config import get_db
+from datetime import timedelta
 
 load_dotenv()
 async def save_message(user_id: int, message: str, response: str):
@@ -30,7 +31,16 @@ async def get_dialog():
 async def get_from_dishes(intent: str, column_name: str, value: str):
     conn = await get_db()
     records = await conn.fetch(
-        f"SELECT {intent} FROM DISHES WHERE {column_name} = $1",
+        f"SELECT {intent} FROM dishes WHERE {column_name} = $1",
+        value
+    )
+    await conn.close()
+    return records
+
+async def get_names_through_time(value: timedelta, trait: str):
+    conn = await get_db()
+    records = await conn.fetch(
+        f"SELECT name FROM dishes WHERE cooking_time {trait} $1",
         value
     )
     await conn.close()
